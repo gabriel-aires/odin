@@ -39,8 +39,8 @@ type alias Navigation =
     }
 
 type alias Model =
-    { navigation    : Navigation
-    , input         : String
+    { nav   : Navigation
+    , input : String
     }
 
 type alias Document msg =
@@ -84,20 +84,20 @@ subscriptions _ =
 
 -- UPDATE
 
-setCurrentPage target navigation =
-    {navigation | currentPage = target}
+setCurrentPage target nav =
+    {nav | currentPage = target}
 
-changeCurrentCategory category navigation =
-    if category /= navigation.currentCategory then
-        {navigation | currentCategory = category, buttonClicked = True, linksVisible = True}
+changeCurrentCategory category nav =
+    if category /= nav.currentCategory then
+        {nav | currentCategory = category, buttonClicked = True, linksVisible = True}
     else
-        {navigation | currentCategory = "", linksVisible = False}
+        {nav | currentCategory = "", linksVisible = False}
 
-toggleMenu navigation =
-    if navigation.buttonClicked then {navigation | buttonClicked = False, currentCategory = ""} else {navigation | buttonClicked = True}
+toggleMenu nav =
+    if nav.buttonClicked then {nav | buttonClicked = False, currentCategory = ""} else {nav | buttonClicked = True}
 
-newNavigation model navigation =
-    {model | navigation = navigation}
+newNavigation model nav =
+    {model | nav = nav}
 
 update msg model =
     case msg of
@@ -105,7 +105,7 @@ update msg model =
             ({ model | input = str }, Cmd.none)
         Menu ->
             (
-                (model.navigation
+                (model.nav
                     |> toggleMenu
                     |> newNavigation model
                 )
@@ -113,7 +113,7 @@ update msg model =
             )
         Dropdown category ->
             (
-                (model.navigation
+                (model.nav
                     |> changeCurrentCategory category
                     |> newNavigation model
                 )
@@ -121,7 +121,7 @@ update msg model =
             )
         PageLoad target ->
             (
-                (model.navigation
+                (model.nav
                     |> setCurrentPage target
                     |> newNavigation model
                 )
@@ -130,7 +130,7 @@ update msg model =
         PageRequest request ->
             case request of
                 Bsr.Internal target ->
-                    (model, Nav.pushUrl model.navigation.key (Url.toString target))
+                    (model, Nav.pushUrl model.nav.key (Url.toString target))
                 Bsr.External target ->
                     (model, Nav.load target)          
 
@@ -139,9 +139,9 @@ update msg model =
 menuPages category model =
     let
         isVisible =
-            ((model.navigation.linksVisible) && (category.name == model.navigation.currentCategory))
+            ((model.nav.linksVisible) && (category.name == model.nav.currentCategory))
         route =
-            model.navigation.context ++ "/" ++ model.navigation.currentCategory ++ "/"
+            model.nav.context ++ "/" ++ model.nav.currentCategory ++ "/"
     in
     List.map
         (\pg ->
@@ -151,7 +151,7 @@ menuPages category model =
                 , classList
                     [
                         ( "pure-menu-selected"
-                        , (model.navigation.currentPage.path == (route ++ pg))
+                        , (model.nav.currentPage.path == (route ++ pg))
                         )
                     ]
                 ]
@@ -166,7 +166,7 @@ menuCategories model =
             li [ class "pure-menu-heading", Ev.onClick (Dropdown cat.name) ]
                 [ text cat.name ] :: (menuPages cat model)
 
-        ) model.navigation.categories
+        ) model.nav.categories
 
 menuButton model =
     div [ id "toggle-menu", Ev.onClick Menu ]
@@ -178,7 +178,7 @@ menu model =
     let
         logo =
             li [ class "pure-menu-heading" ]
-                [ a [ href model.navigation.context ]
+                [ a [ href model.nav.context ]
                     [ img [ class "pure-img-responsive", src "assets/img/logo-white.png" ][] ]
                 ]
         entries =
@@ -188,15 +188,15 @@ menu model =
 
 view model =
     { title =
-        model.navigation.context ++ String.dropLeft (String.length model.navigation.context) model.navigation.currentPage.path
+        model.nav.context ++ String.dropLeft (String.length model.nav.context) model.nav.currentPage.path
     , body = 
         [ node "link" [ rel "stylesheet", href "assets/css/pure-css-1.0/pure-min.css" ] []
         , node "link" [ rel "stylesheet", href "assets/css/pure-css-1.0/pure-responsive-grid.css" ] []
         , node "link" [ rel "stylesheet", href "assets/css/main.css" ] []        
         , aside 
             [ id "sidebar", classList 
-                [ ("menu-hidden", (not model.navigation.buttonClicked))
-                , ("menu-visible", model.navigation.buttonClicked)
+                [ ("menu-hidden", (not model.nav.buttonClicked))
+                , ("menu-visible", model.nav.buttonClicked)
                 ]
             ]
             [ div [ class "pure-menu" ]
