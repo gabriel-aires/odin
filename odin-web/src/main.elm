@@ -3,7 +3,7 @@ module Odin exposing (..)
 import Browser as Bsr
 import Browser.Navigation as Nav
 import Html exposing (..)
-import Html.Attributes exposing (id, class, classList, rel, href, src, hidden)
+import Html.Attributes exposing (id, class, classList, rel, href, src, hidden, style, srcdoc)
 import Html.Events as Ev
 import Url
 
@@ -204,6 +204,9 @@ view model =
                 , (menuButton model)
                 ]
             ]
-        , section [ id "content" ] [ text "teste" ]
+        , section [ id "content" ]
+            [ iframe [ srcdoc "<input type='file'>", style "overflow" "hidden", style "border" "none", style "width" "70%" ]
+                [ text "Your browser does not support iframes" ]
+            ]
         ]
     }
