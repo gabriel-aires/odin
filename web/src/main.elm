@@ -179,7 +179,7 @@ menu model =
         logo =
             li [ class "pure-menu-heading" ]
                 [ a [ href model.nav.context ]
-                    [ img [ class "pure-img-responsive", src "assets/img/logo-white.png" ][] ]
+                    [ img [ class "pure-img-responsive", src "logo_white.png" ][] ]
                 ]
         entries =
             List.concat (menuCategories model)
@@ -190,9 +190,9 @@ view model =
     { title =
         model.nav.context ++ String.dropLeft (String.length model.nav.context) model.nav.currentPage.path
     , body = 
-        [ node "link" [ rel "stylesheet", href "assets/css/pure-css-1.0/pure-min.css" ] []
-        , node "link" [ rel "stylesheet", href "assets/css/pure-css-1.0/pure-responsive-grid.css" ] []
-        , node "link" [ rel "stylesheet", href "assets/css/main.css" ] []        
+        [ node "link" [ rel "stylesheet", href "style_pure_min_v1.css" ] []
+        , node "link" [ rel "stylesheet", href "style_pure_grids_custom.css" ] []
+        , node "link" [ rel "stylesheet", href "style_main.css" ] []        
         , aside 
             [ id "sidebar", classList 
                 [ ("menu-hidden", (not model.nav.buttonClicked))
