@@ -44,8 +44,27 @@ foreach file $deps_list {
 }
 
 foreach file $asset_list {
-	file copy -force [file join $web_path $file] $asset_path
-	file copy -force [file join $web_path $file] $build_path
+
+	set filename	[lindex [split $file .] 0]
+	set fileext		[lindex [split $file .] end]
+
+	if {$fileext eq "png"} {
+		
+		file copy -force [file join $web_path "$filename.bin"] [file join $asset_path "$filename.png"]
+		file copy -force [file join $web_path "$filename.bin"] [file join $build_path "$filename.png"]
+		
+	} else {
+
+		set in 	[open [file join $web_path $file] r]
+		set out [open [file join $build_path $file] w]
+		fconfigure $out -translation binary
+		puts -nonewline $out [binary encode base64 [read $in]]
+		close $in
+		close $out
+		file copy -force [file join $build_path $file] $asset_path
+		
+	}
+	
 	lappend tcl_cmd [file join $asset_path $file]
 }
 
