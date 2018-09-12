@@ -1,50 +1,58 @@
-#initialize auto_path and main variables
-lappend ::auto_path /modules/twapi4.3.5 /modules/wapp1.0
-set packages {twapi sqlite3 cron json wapp}
-set assets [zvfs::list /assets/*]
-set pages {}
-set default_port 3000
+#import packages
+package require starkit
+package require json
+
+#initialize starpack
+starkit::startup
+set vfs_root [file dirname [file normalize [info script]]]
+
+#read configuration
+set conf_file [open $vfs_root/tcl.json r]
+set cfg [::json::json2dict [read $conf_file]]
+close $conf_file
+
+namespace eval cfg {
+
+	dict with cfg {}
+	dict with cfg targets server {}
+
+	set packages {sqlite3 cron json wapp}
+	set asset_path [file join $vfs_root $asset_folder]
+	set mod_path [file join $vfs_root $mod_folder]
+	set assets [glob $asset_path/*]
+	set pages {}
+	set default_port 3000
+
+}
+
+
+#adjust auto_path
+lappend ::auto_path $cfg::mod_path/twapi4.3.5 $cfg::mod_path/wapp1.0
 
 #load required packages
 puts "Loading required packages...\n"
-foreach pkg $packages {
+foreach pkg $cfg::packages {
 	puts "\t* $pkg: [package require $pkg]"
 }
 
 #find static web assets
 puts "\nSearching for static assets...\n"
-foreach file $assets {
-	puts "\t* $file"
-	lappend pages [file tail $file]
-}
-
-#dynamically create asset pages
-proc get-mimetype {ext} {
-	switch $ext {
-		html -
-		css {return "text/$ext"}
-		png {return "image/$ext"}
-		default {error "error: unsupported filetype"}
-	}
-}
-
-foreach page $pages {
-
-	set procname "wapp-page-$page"
-	set document "/assets/$page"
-	set fileext		[lindex [split $page .] end]
-	set mimetype	[get-mimetype $fileext]
-	set channel		[open $document rb]
-	set content 	[binary decode base64 [read $channel]]
-	close $channel
-
-	proc $procname {} "wapp-mimetype $mimetype	; foreach line $content [list wapp-subst %unsafe%([string cat \$line])%]"
-
+foreach file $cfg::assets {
+	puts "\t* [file tail $file]"
 }
 
 #serve elm webapp
-proc wapp-default {} { wapp-redirect "/index.html" }
+proc wapp-default {} {
+
+	set html [open $cfg::asset_path/index.html rb]
+	set content [read $html]
+	close $html
+
+	wapp-mimetype "text/html"
+	wapp-unsafe $content
+
+}
 
 #start webserver
 puts ""
-wapp-start "--server $default_port"
+wapp-start "--server $cfg::default_port"

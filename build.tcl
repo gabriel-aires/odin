@@ -69,6 +69,9 @@ foreach asset $web_assets {
 	file copy -force "$web_path/$asset" $asset_path
 }
 
+file copy -force "$api_path/main.tcl" $app_vfs
+file copy -force tcl.json $app_vfs
+
 cd $build_path
 set tcl_cmd	"$sdx_kit wrap $exe_name -runtime $tcl_kit"
 
