@@ -1,26 +1,26 @@
 {
-    "mod_path":       "/tmp/odin-modules",
-    "asset_path":     "/tmp/odin-assets",
-    "lib_path":       "lib",
-    "web_assets":     ["index.html", "logo_black.png", "logo_white.png", "style_main.css", "style_pure_grids_custom.css", "style_pure_min_v1.css"],
-    "api_path":       "api/src",
-    "web_path":       "web/src",
-    "wrap_path":      "wrap",
-    "build_path":     "build",
-    "elm_bin":        "elm",
-    "tcl_bin":        "tclsh",
-    "platforms":      ["freebsd", "linux", "windows"],
-    "archs":          ["x86", "x64"],
-    "targets": {
-      "server": {
-        "exe_name":   "odin-server",
-        "src_pkgs":   ["wapp1.0"],
-        "dll_pkgs":   ["twapi4.3.5"],
-      },
-      "agent": {
-        "exe_name":   "odin-agent",
-        "src_pkgs":   [],
-        "dll_pkgs":   ["twapi4.3.5"],
-      }
+  "mod_folder":     "modules",
+  "asset_folder":   "assets",
+  "lib_path":       "lib",
+  "web_assets":     [ "index.html", "logo_black.png", "logo_white.png", "style_main.css", "style_pure_grids_custom.css", "style_pure_min_v1.css" ],
+  "api_path":       "api/src",
+  "web_path":       "web/src",
+  "wrap_path":      "wrap",
+  "build_path":     "build",
+  "elm_bin":        "elm",
+  "tcl_bin":        "tclsh",
+  "platforms":      [ "freebsd", "linux", "windows" ],
+  "archs":          [ "x86", "x64" ],
+  "targets": {
+    "server": {
+      "exe_name":   "odin-server",
+      "src_pkgs":   [ "wapp1.0" ],
+      "dll_pkgs":   [ "twapi4.3.5" ]
+    },
+    "agent": {
+      "exe_name":   "odin-agent",
+      "src_pkgs":   [],
+      "dll_pkgs":   [ "twapi4.3.5" ]
     }
+  }
 }

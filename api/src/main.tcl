@@ -1,5 +1,3 @@
-console show
-
 #initialize auto_path and main variables
 lappend ::auto_path /modules/twapi4.3.5 /modules/wapp1.0
 set packages {twapi sqlite3 cron json wapp}
@@ -31,15 +29,15 @@ proc get-mimetype {ext} {
 }
 
 foreach page $pages {
-	
+
 	set procname "wapp-page-$page"
 	set document "/assets/$page"
 	set fileext		[lindex [split $page .] end]
 	set mimetype	[get-mimetype $fileext]
-	set channel		[open $document rb]	
+	set channel		[open $document rb]
 	set content 	[binary decode base64 [read $channel]]
 	close $channel
-	
+
 	proc $procname {} "wapp-mimetype $mimetype	; foreach line $content [list wapp-subst %unsafe%([string cat \$line])%]"
 
 }

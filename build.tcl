@@ -1,23 +1,37 @@
 #!/usr/bin/env tclsh
 
-#initialize main variables
-set subcommand	[lindex $::argv end]
-set deps_path		""
-set deps_list		{}
-set asset_path	""
-set asset_list	{}
-set api_path		""
-set web_path		""
-set stub_path		""
-set build_path	""
-set exe_path		"$build_path/odin-server.exe"
-set help_msg		"usage: $::argv0 clean|debug|release\n"
-set elm_cmd			"elm make $web_path/main.elm"
-set tcl_cmd			"$stub_path $api_path/main.tcl -w $stub_path -forcewrap -o $exe_path"
+#load configuration
+package require json
+set conf_file [open tcl.json r]
+set cfg [::json::json2dict [read $conf_file]]
+close $conf_file
+dict with cfg {}
+dict with cfg targets server {}
 
+#available build commands
 proc clean {}		{global web_path build_path asset_path ; file delete -force "elm-stuff" "$web_path/index.html" $build_path $asset_path}
 proc debug {}		{global production ; set production 0}
 proc release {}	{global production ; set production 1}
+
+#initialize main variables
+set subcommand	[lindex $::argv end]
+set help_msg		"usage: $::argv0 clean|debug|release\n"
+set host_os			[string tolower $tcl_platform(os)]
+set host_arch		"x[string range $tcl_platform(machine) end-1 end]"
+set exe_path		"$build_path/$exe_name"
+set tcl_kit			[file normalize "$wrap_path/tclkit-$host_os-$host_arch"]
+set sdx_kit			[file normalize "$wrap_path/sdx-20110317.kit"]
+set app_vfs			"$build_path/$exe_name.vfs"
+set mod_path 		"$app_vfs/$mod_folder"
+set asset_path 	"$app_vfs/$asset_folder"
+set deps_list		$src_pkgs
+
+#windows specific settings
+if {$host_os eq "windows"} {
+	append exe_path ".exe"
+	append tcl_kit	".exe"
+	lappend deps_list $dll_pkgs
+}
 
 #parse cli arguments
 switch $subcommand {
@@ -36,42 +50,27 @@ if {$production} {
 }
 
 #build static webapp
+set elm_cmd	"$elm_bin make $web_path/main.elm"
 puts "Building webapp ($elm_cmd)"
 exec {*}$elm_cmd
 file rename -force "index.html" $web_path
 
 #build embedded tcl server
-file mkdir $asset_path
 file mkdir $build_path
+file mkdir $app_vfs
+file mkdir $mod_path
+file mkdir $asset_path
 
-foreach file $deps_list {
-	lappend tcl_cmd [file join $deps_path $file]
+foreach mod $deps_list {
+	file copy -force "$lib_path/$mod" $mod_path
 }
 
-foreach file $asset_list {
-
-	set filename	[lindex [split $file .] 0]
-	set fileext		[lindex [split $file .] end]
-
-	if {$fileext eq "png"} {
-
-		file copy -force [file join $web_path "$filename.bin"] [file join $asset_path "$filename.png"]
-		file copy -force [file join $web_path "$filename.bin"] [file join $build_path "$filename.png"]
-
-	} else {
-
-		set in 	[open [file join $web_path $file] r]
-		set out [open [file join $build_path $file] w]
-		fconfigure $out -translation binary
-		puts -nonewline $out [binary encode base64 [read $in]]
-		close $in
-		close $out
-		file copy -force [file join $build_path $file] $asset_path
-
-	}
-
-	lappend tcl_cmd [file join $asset_path $file]
+foreach asset $web_assets {
+	file copy -force "$web_path/$asset" $asset_path
 }
+
+cd $build_path
+set tcl_cmd	"$sdx_kit wrap $exe_name -runtime $tcl_kit"
 
 puts "Building embedded server ($tcl_cmd)"
 exec {*}$tcl_cmd
