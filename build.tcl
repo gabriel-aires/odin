@@ -11,10 +11,10 @@ dict with cfg targets server {}
 #available build commands
 proc clean {}		{global web_path build_path asset_path ; file delete -force "elm-stuff" "$web_path/index.html" $build_path $asset_path}
 proc debug {}		{global production ; set production 0}
-proc release {}	{global production ; set production 1}
+proc release {}		{global production ; set production 1}
 
 #initialize main variables
-set subcommand	[lindex $::argv end]
+set subcommand		[lindex $::argv end]
 set help_msg		"usage: $::argv0 clean|debug|release\n"
 set host_os			[string tolower $tcl_platform(os)]
 set host_arch		"x[string range $tcl_platform(machine) end-1 end]"
@@ -23,7 +23,7 @@ set tcl_kit			[file normalize "$wrap_path/tclkit-$host_os-$host_arch"]
 set sdx_kit			[file normalize "$wrap_path/sdx-20110317.kit"]
 set app_vfs			"$build_path/$exe_name.vfs"
 set mod_path 		"$app_vfs/$mod_folder"
-set asset_path 	"$app_vfs/$asset_folder"
+set asset_path		"$app_vfs/$asset_folder"
 set deps_list		$src_pkgs
 
 #windows specific settings
@@ -37,9 +37,9 @@ if {$host_os eq "windows"} {
 switch $subcommand {
 	clean			{clean ; exit}
 	debug			{debug}
-	release		{release}
+	release			{release}
 	help			{puts $help_msg ; exit}
-	default		{clean ; debug}
+	default			{clean ; debug}
 }
 
 #set packaging options
@@ -50,7 +50,7 @@ if {$production} {
 }
 
 #build static webapp
-set elm_cmd	"$elm_bin make $web_path/main.elm"
+set elm_cmd	"$elm_bin make $web_path/Main.elm"
 puts "Building webapp ($elm_cmd)"
 exec {*}$elm_cmd
 file rename -force "index.html" $web_path

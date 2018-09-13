@@ -25,7 +25,6 @@ namespace eval cfg {
 
 }
 
-
 #adjust auto_path
 lappend ::auto_path $cfg::mod_path/twapi4.3.5 $cfg::mod_path/wapp1.0
 
@@ -41,14 +40,43 @@ foreach file $cfg::assets {
 	puts "\t* [file tail $file]"
 }
 
-#serve elm webapp
 proc wapp-default {} {
+	wapp-redirect "index.html"
+}
 
-	set html [open $cfg::asset_path/index.html rb]
-	set content [read $html]
-	close $html
+#serve elm webapp
+proc wapp-page-index.html {} {
 
+	set file [open $cfg::asset_path/index.html rb]
+	set content [read $file]
+	close $file
+	
+	wapp-allow-xorigin-params
+	wapp-content-security-policy "off"
 	wapp-mimetype "text/html"
+	wapp-unsafe $content
+
+}
+
+#serve static assets
+proc wapp-page-logo_black.png {} {
+
+	set file [open $cfg::asset_path/logo_black.png rb]
+	set content [read $file]
+	close $file
+
+	wapp-mimetype "img/png"
+	wapp-unsafe $content
+
+}
+
+proc wapp-page-logo_white.png {} {
+
+	set file [open $cfg::asset_path/logo_white.png rb]
+	set content [read $file]
+	close $file
+
+	wapp-mimetype "img/png"
 	wapp-unsafe $content
 
 }

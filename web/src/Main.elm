@@ -1,5 +1,6 @@
 module Odin exposing (..)
 
+import Style exposing (stylesheet)
 import Browser as Bsr
 import Browser.Navigation as Nav
 import Html exposing (..)
@@ -9,7 +10,7 @@ import Url
 
 -- MAIN
 
-main = 
+main =
     Bsr.application
         { init = init
         , view = view
@@ -22,7 +23,7 @@ main =
 
 -- MODEL
 
-type alias Category = 
+type alias Category =
     { name  : String
     , pages : List String
     }
@@ -50,7 +51,7 @@ type alias Document msg =
 
 init () url key =
     (Model
-        (Navigation 
+        (Navigation
             "Odin"
             "/odin"
             key
@@ -132,7 +133,7 @@ update msg model =
                 Bsr.Internal target ->
                     (model, Nav.pushUrl model.nav.key (Url.toString target))
                 Bsr.External target ->
-                    (model, Nav.load target)          
+                    (model, Nav.load target)
 
 -- VIEW
 
@@ -189,12 +190,10 @@ menu model =
 view model =
     { title =
         model.nav.context ++ String.dropLeft (String.length model.nav.context) model.nav.currentPage.path
-    , body = 
-        [ node "link" [ rel "stylesheet", href "style_pure_min_v1.css" ] []
-        , node "link" [ rel "stylesheet", href "style_pure_grids_custom.css" ] []
-        , node "link" [ rel "stylesheet", href "style_main.css" ] []        
-        , aside 
-            [ id "sidebar", classList 
+    , body =
+        [ stylesheet
+        , aside
+            [ id "sidebar", classList
                 [ ("menu-hidden", (not model.nav.buttonClicked))
                 , ("menu-visible", model.nav.buttonClicked)
                 ]
