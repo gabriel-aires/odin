@@ -8,9 +8,9 @@ import PureCss exposing (pure_min_v1_css, pure_grids_custom_css)
 main_css =
   """
   body {
-  	background-color: {{ bgcolor }};
+  	background-color: {{ bg_color }};
   	font-family: sans-serif;
-    	font-size: 0.8rem;
+    font-size: 0.8rem;
   	min-width: 160px;
   }
 
@@ -34,12 +34,12 @@ main_css =
 
   #sidebar {
   	display: block;
-  	background: black;
-  	color: {{ bgcolor }};
+  	background-color: {{ menu_color }};
+  	color: {{ bg_color }};
   	opacity: 0.9;
   	font-size: 1rem;
   	height: 100%;
-  	width: 8.5rem;
+  	width: {{ sidebar_width }};
   	padding-top: 1rem;
   	position: fixed;
   	top: 0;
@@ -49,7 +49,7 @@ main_css =
   }
 
   #sidebar.menu-hidden {
-  	left: -8.5rem;
+  	left: -{{ sidebar_width }};
   }
 
   #sidebar.menu-visible {
@@ -73,16 +73,15 @@ main_css =
   	z-index: 3;
   	height: 2rem;
   	width: 2rem;
-  	background-color: black;
+  	background-color: {{ menu_color }};
   	font-weight: 400;
   	font-size: 1rem;
   	padding: 0;
   	margin: 0;
-  	color: {{ bgcolor }};
-  	transition: color 0.2s linear, background-color 0.2s linear, border 0.2s linear;
+  	color: {{ bg_color }};
+  	transition: color 0.2s linear, background-color 0.2s linear, border 0.2s linear, left 0.1s linear, rotate 0.1s linear;
   	position: fixed;
   	top: 0;
-  	transition: left 0.1s linear, rotate 0.1s linear;
   }
 
   .menu-hidden #toggle-menu {
@@ -90,22 +89,22 @@ main_css =
   }
 
   .menu-visible #toggle-menu{
-  	left: 8.5rem;
+  	left: {{ sidebar_width }};
   	transform: rotate(180deg)
   }
 
   #toggle-menu:hover {
-  	border: 1px black solid;
-  	background-color: {{ bgcolor }};
-  	color: black;
+  	border: 1px {{ menu_color }} solid;
+  	background-color: {{ bg_color }};
+  	color: {{ menu_color }};
   }
 
   #toggle-menu:hover .shape-slash, #toggle-menu:hover .shape-backslash {
-  	background-color: black;
+  	background-color: {{ menu_color }};
   }
 
   .shape-slash, .shape-backslash {
-  	background-color: {{ bgcolor }};
+  	background-color: {{ bg_color }};
   	width: 1rem;
   	height: 0.2rem;
   }
@@ -144,12 +143,14 @@ main_css =
   	}
 
   	#content {
-  		margin-left: 8.5rem;
+  		margin-left: {{ sidebar_width }};
   	}
   }
 
   """
-    |> String.Format.namedValue "bgcolor" "ghostwhite"
+    |> String.Format.namedValue "bg_color"      "ghostwhite"
+    |> String.Format.namedValue "menu_color"    "black"
+    |> String.Format.namedValue "sidebar_width" "8.5rem"
     |> text
 
 stylesheet =
