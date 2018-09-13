@@ -47,7 +47,8 @@ proc wapp-default {} {
 #serve elm webapp
 proc wapp-page-index.html {} {
 
-	set file [open $cfg::asset_path/index.html rb]
+	set file [open $cfg::asset_path/index.html r]
+	chan configure $file -encoding utf-8 -translation crlf
 	set content [read $file]
 	close $file
 	
