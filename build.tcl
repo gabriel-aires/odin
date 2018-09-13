@@ -25,6 +25,7 @@ set app_vfs			"$build_path/$exe_name.vfs"
 set mod_path 		"$app_vfs/$mod_folder"
 set asset_path		"$app_vfs/$asset_folder"
 set deps_list		$src_pkgs
+set elm_opts		""
 
 #windows specific settings
 if {$host_os eq "windows"} {
@@ -44,13 +45,13 @@ switch $subcommand {
 
 #set packaging options
 if {$production} {
-	append elm_cmd " --optimize"
+	append elm_opts " --optimize"
 } else {
-	append elm_cmd " --debug"
+	append elm_opts " --debug"
 }
 
 #build static webapp
-set elm_cmd	"$elm_bin make $web_path/Main.elm"
+set elm_cmd	"$elm_bin make $web_path/Main.elm $elm_opts"
 puts "Building webapp ($elm_cmd)"
 exec {*}$elm_cmd
 file rename -force "index.html" $web_path
