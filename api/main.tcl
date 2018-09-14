@@ -25,27 +25,17 @@ namespace eval cfg {
 
 }
 
-#adjust auto_path
+#adjust auto_path and load wapp framework
 lappend ::auto_path $cfg::mod_path/twapi4.3.5 $cfg::mod_path/wapp1.0
+package require wapp
 
-#load required packages
-puts "Loading required packages...\n"
-foreach pkg $cfg::packages {
-	puts "\t* $pkg: [package require $pkg]"
-}
-
-#find static web assets
-puts "\nSearching for static assets...\n"
-foreach file $cfg::assets {
-	puts "\t* [file tail $file]"
-}
-
+#redirect requests to webapp
 proc wapp-default {} {
-	wapp-redirect "index.html"
+	wapp-redirect $cfg::web_ctx
 }
 
 #serve elm webapp
-proc wapp-page-index.html {} {
+proc wapp-page-$cfg::web_ctx {} {
 
 	set file [open $cfg::asset_path/index.html r]
 	chan configure $file -encoding utf-8 -translation crlf
@@ -82,6 +72,52 @@ proc wapp-page-logo_white.png {} {
 
 }
 
-#start webserver
-puts ""
-wapp-start "--server $cfg::default_port"
+#custom wapp start with tls options
+proc wapp-start-custom {cli_options} {
+	
+	set port 0
+	set tls_opts ""
+	set server [list wappInt-new-connection wappInt-http-readable server]
+	
+	if {([llength $cli_options] % 2) != 0} {
+		puts "usage: [file dirname $::argv0] -key1 value1 -key2 value2 ..."
+		return
+	}
+	
+	foreach {key value} $cli_options {
+
+		switch -exact -- $key {
+			-port {
+				set port $value
+			}			
+			-cadir -
+			-cafile -
+			-certfile -
+			-cypher -
+			-dhparams -
+			-keyfile {
+				append tls_opts "$key $value "
+			}
+			default {
+				puts "unknown option: $key"
+				return
+			}			
+		}	
+	}
+	
+	if {! $port} {
+		set port $cfg::tcp_port
+	}
+	
+	if {$tls_opts ne ""} {
+		package require tls
+		tls::socket -server $server {*}$tls_opts $port
+	} else {
+		socket -server $server $port
+	}
+	
+    puts "Starting server with options -port $port $tls_opts..."
+	vwait ::forever
+}
+
+wapp-start-custom $::argv
