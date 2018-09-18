@@ -9,7 +9,7 @@ dict with cfg {}
 dict with cfg targets server {}
 
 #available build commands
-proc clean {}		{global web_path build_path asset_path ; file delete -force "elm-stuff" "$web_path/index.html" $build_path $asset_path}
+proc clean {}		{global web_path build_path asset_folder ; file delete -force "elm-stuff" "$web_path/$asset_folder/index.html" $build_path}
 proc debug {}		{global production ; set production 0}
 proc release {}		{global production ; set production 1}
 
@@ -54,7 +54,7 @@ if {$production} {
 set elm_cmd	"$elm_bin make $web_path/Main.elm $elm_opts"
 puts "Building webapp ($elm_cmd)"
 exec {*}$elm_cmd
-file rename -force "index.html" $web_path
+file rename -force "index.html" $web_path/$asset_folder
 
 #build embedded tcl server
 file mkdir $build_path
@@ -67,7 +67,7 @@ foreach mod $deps_list {
 }
 
 foreach asset $web_assets {
-	file copy -force "$web_path/$asset" $asset_path
+	file copy -force "$web_path/$asset_folder/$asset" $asset_path
 }
 
 file copy -force "$api_path/main.tcl" $app_vfs

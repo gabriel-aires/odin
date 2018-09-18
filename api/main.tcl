@@ -19,8 +19,7 @@ namespace eval cfg {
 	set packages {sqlite3 cron json wapp}
 	set asset_path [file join $vfs_root $asset_folder]
 	set mod_path [file join $vfs_root $mod_folder]
-	set assets [glob $asset_path/*]
-	set pages {}
+	set main_page [string trimleft $cfg::web_ctx /]
 	set default_port 3000
 
 }
@@ -29,47 +28,103 @@ namespace eval cfg {
 lappend ::auto_path $cfg::mod_path/twapi4.3.5 $cfg::mod_path/wapp1.0
 package require wapp
 
-#redirect requests to webapp
-proc wapp-default {} {
-	wapp-redirect $cfg::web_ctx
-}
-
-#serve elm webapp
-proc wapp-page-$cfg::web_ctx {} {
-
-	set file [open $cfg::asset_path/index.html r]
-	chan configure $file -encoding utf-8 -translation crlf
+#serve static assets
+proc serve {asset} {
+	
+	set ext [ string range [file extension $asset] 1 end ]
+	switch  $ext {
+		html					{set mimetype "text/html" 				; set f_config "-encoding utf-8 -translation crlf"}
+		txt - log				{set mimetype "text/plain"				; set f_config "-encoding utf-8 -translation crlf"}
+		png - jpeg - gif - bmp	{set mimetype "img/$ext"				; set f_config "-translation binary"}
+		default					{set mimetype "application/octet-stream"; set f_config "-translation binary"}
+	}
+	
+	set file [open $asset r]
+	chan configure $file {*}$f_config
 	set content [read $file]
 	close $file
 	
+	wapp-mimetype $mimetype
+	wapp-unsafe $content
+	
+}
+
+proc maybe {procname option} {
+	if {[llength [info proc $procname]]>0} {
+		$procname $option
+	} else {
+		wapp-default
+	}
+}
+
+#route requests based on PATH_HEAD
+proc route {method path} {
+	
+	set request_method [wapp-param REQUEST_METHOD]
+	set request_path [wapp-param PATH_INFO]
+	set route [file join $cfg::web_ctx $path]
+	
+	if {$method != $request_method} {
+		return
+	
+	} elseif {! [string match $route $request_path]} {
+		return
+	
+	} else {		
+		switch -glob $route {
+			$cfg::web_ctx {
+				wapp-set-param ENDPOINT webapp
+				wapp-set-param PATH_VAR {}
+			}
+			*[a-z] {
+				wapp-set-param ENDPOINT [string map {/ -} $path]
+				wapp-set-param PATH_VAR {}
+			}
+			*/\* {
+				wapp-set-param ENDPOINT [string map {/* "" / -} $path]
+				wapp-set-param PATH_VAR [string replace $request_path 0 [string length $cfg::web_ctx/[wapp-param ENDPOINT]/]]
+			}
+			default {
+				wapp-reply-code "500 Internal Server Error"
+				wapp-trim "<h1>500 - Internal Server Error/h1>"
+				error "invalid route: $route"
+			}
+		}
+		
+		maybe endpoint-[string tolower $method]-[wapp-param ENDPOINT] [wapp-param PATH_VAR]
+	}	
+}
+
+#serve elm webapp
+proc endpoint-get-webapp {} {
 	wapp-allow-xorigin-params
 	wapp-content-security-policy "off"
-	wapp-mimetype "text/html"
-	wapp-unsafe $content
-
+	serve $cfg::asset_path/index.html
 }
 
 #serve static assets
-proc wapp-page-logo_black.png {} {
-
-	set file [open $cfg::asset_path/logo_black.png rb]
-	set content [read $file]
-	close $file
-
-	wapp-mimetype "img/png"
-	wapp-unsafe $content
-
+proc endpoint-get-$cfg::asset_folder {asset_name} {
+	if {$asset_name in $cfg::web_assets} {
+		serve $cfg::asset_path/$asset_name
+	} else {
+		wapp-default
+	}
 }
 
-proc wapp-page-logo_white.png {} {
+#default response: 404
+proc wapp-default {} {
+	wapp-reply-code "404 Not Found"
+	wapp-subst "<h1>404 - Not Found</h1>"
+	
+	foreach line [split [wapp-debug-env] "\n"] {
+		wapp-unsafe "<br>$line"
+	}
+}
 
-	set file [open $cfg::asset_path/logo_white.png rb]
-	set content [read $file]
-	close $file
-
-	wapp-mimetype "img/png"
-	wapp-unsafe $content
-
+#route table
+proc wapp-page-$cfg::main_page {} {	
+	route GET ""
+	route GET $cfg::asset_folder/*	
 }
 
 #custom wapp start with tls options
@@ -85,24 +140,11 @@ proc wapp-start-custom {cli_options} {
 	}
 	
 	foreach {key value} $cli_options {
-
 		switch -exact -- $key {
-			-port {
-				set port $value
-			}			
-			-cadir -
-			-cafile -
-			-certfile -
-			-cypher -
-			-dhparams -
-			-keyfile {
-				append tls_opts "$key $value "
-			}
-			default {
-				puts "unknown option: $key"
-				return
-			}			
-		}	
+			-port {set port $value}
+			-cadir - -cafile - -certfile - -cypher - -dhparams - -keyfile {append tls_opts "$key $value "}
+			default {puts "unknown option: $key" ; return}			
+		}
 	}
 	
 	if {! $port} {
@@ -117,7 +159,7 @@ proc wapp-start-custom {cli_options} {
 	}
 	
     puts "Starting server with options -port $port $tls_opts..."
-	vwait ::forever
+	vwait ::stop
 }
 
 wapp-start-custom $::argv

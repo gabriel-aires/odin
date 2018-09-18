@@ -14,7 +14,7 @@
       "tcp_port":     "3000",
       "api_path":     "api",
       "web_path":     "web",
-      "web_ctx":      "odin",      
+      "web_ctx":      "/odin",      
       "web_assets":   [ "index.html", "logo_black.png", "logo_white.png" ],
       "asset_folder": "assets",
       "elm_bin":      "elm"
