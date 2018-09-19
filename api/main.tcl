@@ -132,11 +132,8 @@ proc DELETE {path} {
 proc $conf::entrypoint {} {
 
 	wapp-set-param RESPONSE_SENT 0
+	source $vfs_root/routes.tcl
 
-	GET $conf::asset_folder/*
-	GET api/user/*
-	GET /
-	ERROR 404
 }
 
 #redirect to webapp
