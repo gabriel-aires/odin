@@ -8,7 +8,7 @@ set vfs_root [file dirname [file normalize [info script]]]
 
 #read configuration
 set json_file [open $vfs_root/tcl.json r]
-set conf [::json::json2dict [read $conf_file]]
+set conf [::json::json2dict [read $json_file]]
 close $json_file
 
 namespace eval conf {
@@ -27,6 +27,25 @@ namespace eval conf {
 #adjust auto_path and load wapp framework
 lappend ::auto_path $conf::mod_path/twapi4.3.5 $conf::mod_path/wapp1.0
 package require wapp
+
+#http errors
+proc ERROR {code} {
+
+	if {[wapp-param RESPONSE_SENT]} {
+		return
+
+	} else {
+		switch $code {
+			403		{set msg "403 Forbidden"}
+			404		{set msg "404 Not Found"}
+			default {set msg "500 Internal Server Error"}
+		}
+
+		wapp-reply-code $msg
+		wapp-trim "<h1>$msg</h1>"
+		wapp-set-param RESPONSE_SENT 1
+	}
+}
 
 #serve static assets
 proc serve {asset} {
@@ -49,72 +68,68 @@ proc serve {asset} {
 	
 }
 
+proc log {msg} {
+	puts "[clock format [clock seconds]]\t$msg"
+}
+
 #generate http response if endpoint is available
 proc maybe {procname option} {
 	if {[llength [info proc $procname]]>0} {
+		log "$procname $option"
 		$procname $option
+		wapp-set-param RESPONSE_SENT 1
 	} else {
 		wapp-default
 	}
 }
 
 #route requests from entrypoint
-proc route {method path} {
+proc route {method raw_path} {
 	
+	set done [wapp-param RESPONSE_SENT]
 	set request_method [wapp-param REQUEST_METHOD]
-	set request_path [wapp-param PATH_INFO]
+	set request_path [string trimright [wapp-param PATH_INFO] /]
+	set path [string trim $raw_path /]
 	set route [file join $conf::web_ctx $path]
 	
-	if {$method != $request_method} {
+	if {$done} {
+		return
+
+	} elseif {$method != $request_method} {
 		return
 	
 	} elseif {! [string match $route $request_path]} {
 		return
 	
-	} else {		
-		switch -glob $route {
-			$conf::web_ctx {
-				wapp-set-param ENDPOINT index
-				wapp-set-param PATH_VAR {}
-			}
-			*[a-z] {
-				wapp-set-param ENDPOINT [string map {/ -} $path]
-				wapp-set-param PATH_VAR {}
-			}
-			*/\* {
-				wapp-set-param ENDPOINT [string map {/* "" / -} $path]
-				wapp-set-param PATH_VAR [string replace $request_path 0 [string length $conf::web_ctx/[wapp-param ENDPOINT]]]
-			}
-			default {
-				wapp-reply-code "500 Internal Server Error"
-				wapp-trim "<h1>500 - Internal Server Error/h1>"
-				error "invalid route: $route"
-			}
-		}
-		
-		maybe endpoint-[string tolower $method]-[wapp-param ENDPOINT] [wapp-param PATH_VAR]
+	} else {
+		set ep [string map {/* "" /? "" * "" ? "" / -} $path]
+		set endpoint [expr {$ep ne {} ? $ep : {index}}]
+		set urlparam [string replace $request_path 0 [string length $conf::web_ctx/$ep]]
+		set procname "endpoint-[string tolower $method]-$endpoint"
+		maybe $procname $urlparam
+
 	}
 }
 
 #main HTTP verbs
 proc GET {path} {
-	route GET path
+	route GET $path
 }
 
 proc POST {path} {
-	route POST path
+	route POST $path
 }
 
 proc PUT {path} {
-	route PUT path 
+	route PUT $path 
 }
 
 proc DELETE {path} {
-	route DELETE path
+	route DELETE $path
 }
 
 #serve elm webapp
-proc endpoint-get-index {} {
+proc endpoint-get-index {_} {
 	wapp-allow-xorigin-params
 	wapp-content-security-policy "off"
 	serve $conf::asset_path/index.html
@@ -125,26 +140,23 @@ proc endpoint-get-$conf::asset_folder {asset_name} {
 	if {$asset_name in $conf::web_assets} {
 		serve $conf::asset_path/$asset_name
 	} else {
-		wapp-default
+		ERROR 404
 	}
 }
 
 #route table
 proc $conf::entrypoint {} {
 
-	GET /
-	GET $conf::asset_folder/*
+	wapp-set-param RESPONSE_SENT 0
 
+	GET $conf::asset_folder/*
+	GET /
+	ERROR 404
 }
 
-#default response: 404
+#redirect to webapp
 proc wapp-default {} {
-	wapp-reply-code "404 Not Found"
-	wapp-subst "<h1>404 - Not Found</h1>"
-	
-	foreach line [split [wapp-debug-env] "\n"] {
-		wapp-unsafe "<br>$line"
-	}
+	wapp-redirect $conf::web_ctx/
 }
 
 #custom wapp start with tls options

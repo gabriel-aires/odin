@@ -53,7 +53,7 @@ init () url key =
     (Model
         (Navigation
             "Odin"
-            "/odin"
+            "/odin/"
             key
             False
             False
@@ -142,7 +142,7 @@ menuPages category model =
         isVisible =
             ((model.nav.linksVisible) && (category.name == model.nav.currentCategory))
         route =
-            model.nav.context ++ "/" ++ model.nav.currentCategory ++ "/"
+            model.nav.context ++ model.nav.currentCategory ++ "/"
     in
     List.map
         (\pg ->
