@@ -132,7 +132,7 @@ proc DELETE {path} {
 proc $conf::entrypoint {} {
 
 	wapp-set-param RESPONSE_SENT 0
-	source $vfs_root/routes.tcl
+	source $::vfs_root/routes.tcl
 
 }
 
