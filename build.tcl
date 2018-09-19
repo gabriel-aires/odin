@@ -19,8 +19,8 @@ set help_msg		"usage: $::argv0 clean|debug|release\n"
 set host_os			[string tolower $tcl_platform(os)]
 set host_arch		"x[string range $tcl_platform(machine) end-1 end]"
 set exe_path		"$build_path/$exe_name"
-set tcl_kit			[file normalize "$wrap_path/tclkit-$host_os-$host_arch"]
-set sdx_kit			[file normalize "$wrap_path/sdx-20110317.kit"]
+set tcl_kit			"tclkit-$host_os-$host_arch"
+set sdx_kit			"sdx-20110317.kit"
 set app_vfs			"$build_path/$exe_name.vfs"
 set mod_path 		"$app_vfs/$mod_folder"
 set asset_path		"$app_vfs/$asset_folder"
@@ -57,6 +57,7 @@ exec {*}$elm_cmd
 file rename -force "index.html" $web_path/$asset_folder
 
 #build embedded tcl server
+set runtime [file normalize $wrap_path/$tcl_kit]
 file mkdir $build_path
 file mkdir $app_vfs
 file mkdir $mod_path
@@ -72,9 +73,10 @@ foreach asset $web_assets {
 
 file copy -force "$api_path/main.tcl" $app_vfs
 file copy -force tcl.json $app_vfs
+file copy -force $wrap_path/$tcl_kit $build_path
+file copy -force $wrap_path/$sdx_kit $build_path/sdx.kit
 
 cd $build_path
-set tcl_cmd	"$sdx_kit wrap $exe_name -runtime $tcl_kit"
-
+set tcl_cmd	"[pwd]/$tcl_kit sdx.kit wrap $exe_name -runtime $runtime"
 puts "Building embedded server ($tcl_cmd)"
 exec {*}$tcl_cmd
