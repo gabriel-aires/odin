@@ -7,25 +7,25 @@ starkit::startup
 set vfs_root [file dirname [file normalize [info script]]]
 
 #read configuration
-set conf_file [open $vfs_root/tcl.json r]
-set cfg [::json::json2dict [read $conf_file]]
-close $conf_file
+set json_file [open $vfs_root/tcl.json r]
+set conf [::json::json2dict [read $conf_file]]
+close $json_file
 
-namespace eval cfg {
+namespace eval conf {
 
-	dict with cfg {}
-	dict with cfg targets server {}
+	dict with conf {}
+	dict with conf targets server {}
 
 	set packages {sqlite3 cron json wapp}
 	set asset_path [file join $vfs_root $asset_folder]
 	set mod_path [file join $vfs_root $mod_folder]
-	set main_page [string trimleft $cfg::web_ctx /]
+	set entrypoint "wapp-page-[string trimleft $web_ctx /]"
 	set default_port 3000
 
 }
 
 #adjust auto_path and load wapp framework
-lappend ::auto_path $cfg::mod_path/twapi4.3.5 $cfg::mod_path/wapp1.0
+lappend ::auto_path $conf::mod_path/twapi4.3.5 $conf::mod_path/wapp1.0
 package require wapp
 
 #serve static assets
@@ -49,19 +49,7 @@ proc serve {asset} {
 	
 }
 
-proc pipe {vars body} {
-	set args [split $vars |]
-	set cmds [split $body "\n"]
-
-	foreach line $cmds {
-		set cmd [string trim $line]
-		if {[string length $cmd] > 0} {
-			uplevel "$cmd {*}$args"
-		}
-		
-	}
-}
-
+#generate http response if endpoint is available
 proc maybe {procname option} {
 	if {[llength [info proc $procname]]>0} {
 		$procname $option
@@ -70,12 +58,12 @@ proc maybe {procname option} {
 	}
 }
 
-#route requests from main page
-proc route {method path ctx} {
+#route requests from entrypoint
+proc route {method path} {
 	
 	set request_method [wapp-param REQUEST_METHOD]
 	set request_path [wapp-param PATH_INFO]
-	set route [file join $ctx $path]
+	set route [file join $conf::web_ctx $path]
 	
 	if {$method != $request_method} {
 		return
@@ -85,7 +73,7 @@ proc route {method path ctx} {
 	
 	} else {		
 		switch -glob $route {
-			$ctx {
+			$conf::web_ctx {
 				wapp-set-param ENDPOINT index
 				wapp-set-param PATH_VAR {}
 			}
@@ -95,7 +83,7 @@ proc route {method path ctx} {
 			}
 			*/\* {
 				wapp-set-param ENDPOINT [string map {/* "" / -} $path]
-				wapp-set-param PATH_VAR [string replace $request_path 0 [string length $ctx/[wapp-param ENDPOINT]]]
+				wapp-set-param PATH_VAR [string replace $request_path 0 [string length $conf::web_ctx/[wapp-param ENDPOINT]]]
 			}
 			default {
 				wapp-reply-code "500 Internal Server Error"
@@ -105,23 +93,48 @@ proc route {method path ctx} {
 		}
 		
 		maybe endpoint-[string tolower $method]-[wapp-param ENDPOINT] [wapp-param PATH_VAR]
-	}	
+	}
+}
+
+#main HTTP verbs
+proc GET {path} {
+	route GET path
+}
+
+proc POST {path} {
+	route POST path
+}
+
+proc PUT {path} {
+	route PUT path 
+}
+
+proc DELETE {path} {
+	route DELETE path
 }
 
 #serve elm webapp
 proc endpoint-get-index {} {
 	wapp-allow-xorigin-params
 	wapp-content-security-policy "off"
-	serve $cfg::asset_path/index.html
+	serve $conf::asset_path/index.html
 }
 
 #serve static assets
-proc endpoint-get-$cfg::asset_folder {asset_name} {
-	if {$asset_name in $cfg::web_assets} {
-		serve $cfg::asset_path/$asset_name
+proc endpoint-get-$conf::asset_folder {asset_name} {
+	if {$asset_name in $conf::web_assets} {
+		serve $conf::asset_path/$asset_name
 	} else {
 		wapp-default
 	}
+}
+
+#route table
+proc $conf::entrypoint {} {
+
+	GET /
+	GET $conf::asset_folder/*
+
 }
 
 #default response: 404
@@ -132,16 +145,6 @@ proc wapp-default {} {
 	foreach line [split [wapp-debug-env] "\n"] {
 		wapp-unsafe "<br>$line"
 	}
-}
-
-#route table
-proc wapp-page-$cfg::main_page {} {
-
-	pipe $cfg::web_ctx {
-		route GET ""
-		route GET $cfg::asset_folder/*
-	}
-
 }
 
 #custom wapp start with tls options
@@ -165,7 +168,7 @@ proc wapp-start-custom {cli_options} {
 	}
 	
 	if {! $port} {
-		set port $cfg::tcp_port
+		set port $conf::tcp_port
 	}
 	
 	if {$tls_opts ne ""} {
