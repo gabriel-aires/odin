@@ -1,7 +1,7 @@
 {
   "mod_folder":       "modules",
   "lib_path":         "lib",
-  "wrap_path":        "wrap",
+  "wrap_folder":      "wrap",
   "build_path":       "build",
   "tcl_bin":          "tclsh",
   "platforms":        [ "freebsd", "linux", "windows" ],

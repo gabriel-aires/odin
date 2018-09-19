@@ -18,6 +18,7 @@ namespace eval conf {
 
 	set packages {sqlite3 cron json wapp}
 	set asset_path [file join $vfs_root $asset_folder]
+	set wrap_path [file join $vfs_root $wrap_folder]
 	set mod_path [file join $vfs_root $mod_folder]
 	set entrypoint "wapp-page-[string trimleft $web_ctx /]"
 	set default_port 3000

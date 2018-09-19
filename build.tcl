@@ -24,6 +24,7 @@ set sdx_kit			"sdx-20110317.kit"
 set app_vfs			"$build_path/$exe_name.vfs"
 set mod_path 		"$app_vfs/$mod_folder"
 set asset_path		"$app_vfs/$asset_folder"
+set wrap_path		"$app_vfs/$wrap_folder"
 set deps_list		"$src_pkgs"
 set elm_opts		""
 
@@ -57,18 +58,13 @@ exec {*}$elm_cmd
 file rename -force "index.html" $web_path/$asset_folder
 
 #build embedded tcl server
-set runtime [file normalize $wrap_path/$tcl_kit]
+set runtime [file normalize $wrap_folder/$tcl_kit]
 file mkdir $build_path
 file mkdir $app_vfs
 file mkdir $mod_path
-file mkdir $asset_path
 
 foreach mod $deps_list {
 	file copy -force "$lib_path/$mod" $mod_path
-}
-
-foreach asset $web_assets {
-	file copy -force "$web_path/$asset_folder/$asset" $asset_path
 }
 
 foreach srcfile [glob $api_path/*] {
@@ -76,8 +72,10 @@ foreach srcfile [glob $api_path/*] {
 }
 
 file copy -force tcl.json $app_vfs
-file copy -force $wrap_path/$tcl_kit $build_path
-file copy -force $wrap_path/$sdx_kit $build_path/sdx.kit
+file copy -force $web_path/$asset_folder $app_vfs
+file copy -force $wrap_folder $app_vfs
+file copy -force $wrap_folder/$tcl_kit $build_path
+file copy -force $wrap_folder/$sdx_kit $build_path/sdx.kit
 
 cd $build_path
 set tcl_cmd	"[pwd]/$tcl_kit sdx.kit wrap $exe_name -runtime $runtime"

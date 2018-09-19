@@ -1,4 +1,4 @@
 GET $conf::asset_folder/*
-GET api/user/*
+GET api/agent/*
 GET /
 ERROR 404

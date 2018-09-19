@@ -14,7 +14,24 @@ proc endpoint-get-$conf::asset_folder {asset_name} {
 	}
 }
 
-#test api
-proc endpoint-get-api-user {user} {
-	wapp-trim "<h1>Hello, $user!</h1>"
+#download agents
+proc endpoint-get-api-agent {agent_platform} {
+
+	set agent $conf::wrap_path/tclkit-$agent_platform
+
+	switch $agent_platform {
+		freebsd-x64 -
+		linux-x64 -
+		linux-x86 { 
+			serve $agent
+		}
+		windows-x64 -
+		windows-x86 {
+			append agent .exe
+			serve $agent
+		}
+		default {
+			ERROR 404
+		}
+	}
 }
