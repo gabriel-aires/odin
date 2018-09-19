@@ -49,6 +49,19 @@ proc serve {asset} {
 	
 }
 
+proc pipe {vars body} {
+	set args [split $vars |]
+	set cmds [split $body "\n"]
+
+	foreach line $cmds {
+		set cmd [string trim $line]
+		if {[string length $cmd] > 0} {
+			uplevel "$cmd {*}$args"
+		}
+		
+	}
+}
+
 proc maybe {procname option} {
 	if {[llength [info proc $procname]]>0} {
 		$procname $option
@@ -57,12 +70,12 @@ proc maybe {procname option} {
 	}
 }
 
-#route requests based on PATH_HEAD
-proc route {method path} {
+#route requests from main page
+proc route {method path ctx} {
 	
 	set request_method [wapp-param REQUEST_METHOD]
 	set request_path [wapp-param PATH_INFO]
-	set route [file join $cfg::web_ctx $path]
+	set route [file join $ctx $path]
 	
 	if {$method != $request_method} {
 		return
@@ -72,8 +85,8 @@ proc route {method path} {
 	
 	} else {		
 		switch -glob $route {
-			$cfg::web_ctx {
-				wapp-set-param ENDPOINT webapp
+			$ctx {
+				wapp-set-param ENDPOINT index
 				wapp-set-param PATH_VAR {}
 			}
 			*[a-z] {
@@ -82,7 +95,7 @@ proc route {method path} {
 			}
 			*/\* {
 				wapp-set-param ENDPOINT [string map {/* "" / -} $path]
-				wapp-set-param PATH_VAR [string replace $request_path 0 [string length $cfg::web_ctx/[wapp-param ENDPOINT]/]]
+				wapp-set-param PATH_VAR [string replace $request_path 0 [string length $ctx/[wapp-param ENDPOINT]]]
 			}
 			default {
 				wapp-reply-code "500 Internal Server Error"
@@ -96,7 +109,7 @@ proc route {method path} {
 }
 
 #serve elm webapp
-proc endpoint-get-webapp {} {
+proc endpoint-get-index {} {
 	wapp-allow-xorigin-params
 	wapp-content-security-policy "off"
 	serve $cfg::asset_path/index.html
@@ -122,9 +135,13 @@ proc wapp-default {} {
 }
 
 #route table
-proc wapp-page-$cfg::main_page {} {	
-	route GET ""
-	route GET $cfg::asset_folder/*	
+proc wapp-page-$cfg::main_page {} {
+
+	pipe $cfg::web_ctx {
+		route GET ""
+		route GET $cfg::asset_folder/*
+	}
+
 }
 
 #custom wapp start with tls options
