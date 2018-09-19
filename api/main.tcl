@@ -144,12 +144,18 @@ proc endpoint-get-$conf::asset_folder {asset_name} {
 	}
 }
 
+#test api
+proc endpoint-get-api-user {user} {
+	wapp-trim "<h1>Hello, $user!</h1>"
+}
+
 #route table
 proc $conf::entrypoint {} {
 
 	wapp-set-param RESPONSE_SENT 0
 
 	GET $conf::asset_folder/*
+	GET api/user/*
 	GET /
 	ERROR 404
 }
