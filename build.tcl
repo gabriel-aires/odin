@@ -24,7 +24,7 @@ set sdx_kit			"sdx-20110317.kit"
 set app_vfs			"$build_path/$exe_name.vfs"
 set mod_path 		"$app_vfs/$mod_folder"
 set asset_path		"$app_vfs/$asset_folder"
-set deps_list		$src_pkgs
+set deps_list		"$src_pkgs"
 set elm_opts		""
 
 #windows specific settings
@@ -71,7 +71,10 @@ foreach asset $web_assets {
 	file copy -force "$web_path/$asset_folder/$asset" $asset_path
 }
 
-file copy -force "$api_path/main.tcl" $app_vfs
+foreach srcfile [glob $api_path/*] {
+	file copy -force $srcfile $app_vfs
+}
+
 file copy -force tcl.json $app_vfs
 file copy -force $wrap_path/$tcl_kit $build_path
 file copy -force $wrap_path/$sdx_kit $build_path/sdx.kit

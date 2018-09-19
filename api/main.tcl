@@ -52,10 +52,10 @@ proc serve {asset} {
 	
 	set ext [ string range [file extension $asset] 1 end ]
 	switch  $ext {
-		html					{set mimetype "text/html" 				; set f_config "-encoding utf-8 -translation crlf"}
-		txt - log				{set mimetype "text/plain"				; set f_config "-encoding utf-8 -translation crlf"}
-		png - jpeg - gif - bmp	{set mimetype "img/$ext"				; set f_config "-translation binary"}
-		default					{set mimetype "application/octet-stream"; set f_config "-translation binary"}
+		html					{set type "text/html" ; set f_config "-encoding utf-8 -translation crlf"}
+		txt - log				{set type "text/plain" ; set f_config "-encoding utf-8 -translation crlf"}
+		png - jpeg - gif - bmp	{set type "img/$ext" ; set f_config "-translation binary"}
+		default					{set type "application/octet-stream"; set f_config "-translation binary"}
 	}
 	
 	set file [open $asset r]
@@ -63,7 +63,7 @@ proc serve {asset} {
 	set content [read $file]
 	close $file
 	
-	wapp-mimetype $mimetype
+	wapp-mimetype $type
 	wapp-unsafe $content
 	
 }
@@ -128,27 +128,6 @@ proc DELETE {path} {
 	route DELETE $path
 }
 
-#serve elm webapp
-proc endpoint-get-index {_} {
-	wapp-allow-xorigin-params
-	wapp-content-security-policy "off"
-	serve $conf::asset_path/index.html
-}
-
-#serve static assets
-proc endpoint-get-$conf::asset_folder {asset_name} {
-	if {$asset_name in $conf::web_assets} {
-		serve $conf::asset_path/$asset_name
-	} else {
-		ERROR 404
-	}
-}
-
-#test api
-proc endpoint-get-api-user {user} {
-	wapp-trim "<h1>Hello, $user!</h1>"
-}
-
 #route table
 proc $conf::entrypoint {} {
 
@@ -199,5 +178,8 @@ proc wapp-start-custom {cli_options} {
     puts "Starting server with options -port $port $tls_opts..."
 	vwait ::stop
 }
+
+#endpoints definition
+source $vfs_root/endpoints_get.tcl
 
 wapp-start-custom $::argv
