@@ -31,7 +31,7 @@ proc endpoint-get-api-agent {agent_platform} {
 			serve $agent
 		}
 		default {
-			ERROR 404
+			wapp-unsafe "<h1>Chosen platform not found: $agent_platform</h1>"
 		}
 	}
 }
