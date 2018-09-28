@@ -16,7 +16,7 @@ proc release {}		{global production ; set production 1}
 #initialize main variables
 set subcommand		[lindex $::argv end]
 set help_msg		"usage: $::argv0 clean|debug|release\n"
-set host_os			[string tolower $tcl_platform(os)]
+set host_os			[lindex [split [string tolower $tcl_platform(os)]] 0]
 set host_arch		"x[string range $tcl_platform(machine) end-1 end]"
 set exe_path		"$build_path/$exe_name"
 set tcl_kit			"tclkit-$host_os-$host_arch"
@@ -31,6 +31,7 @@ set elm_opts		""
 #windows specific settings
 if {$host_os eq "windows"} {
 	append exe_path ".exe"
+	append exe_name ".exe"
 	append tcl_kit	".exe"
 	lappend deps_list $dll_pkgs
 }
