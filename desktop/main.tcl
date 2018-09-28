@@ -12,7 +12,11 @@ oo::class create Container {
 	method parent {} {
 		return [join [lrange [split $Path .] 0 end-1] .]
 	}
-
+	
+	method name {} {
+		return [lindex [split $Path .] end]
+	}
+	
 	method id {} {
 		return $Path
 	}
@@ -41,6 +45,14 @@ oo::class create Repository {
 	
 	method repo_val {key} {
 		return $Repository($key)
+	}
+	
+	method repo_dump {} {
+		return [array get Repository]
+	}
+	
+	method repo_print {} {
+		parray Repository
 	}
 }
 
@@ -93,21 +105,29 @@ oo::class create AgentConfig {
 	mixin -append Container Form Repository
 	
 	constructor {args} {
-		set Name [lindex $args 0]
-		set Path [lindex $args 1]
-		set labels [lindex $args 2]
+		set name [lindex $args 0]
+		set path [lindex $args 1]
+		set fields [lindex $args 2]
 		
 		my setup_repository
-		my setup_container $Name $Path
-		my setup_form $labels
+		my setup_container $name $path
+		my setup_form $fields
 		
 		set submit [::ttk::button "[my id].submit" -text "Done" -command "[self] submit"]
 		grid $submit
 	}
 	
+	method debug {} {
+		puts ""
+		puts "Data submitted from [my name] at [my parent]"
+		puts "-----------------------------------------------------"
+		foreach {k v} [my repo_dump] {
+			puts "$k:\t$v"
+		}
+	}
+	
 	method submit {} {
-		set result [::ttk::label "[my id].result" -text "exec = [my repo_val exec]" ]
-		grid $result
+		my debug
 	}
 }
 
@@ -115,7 +135,7 @@ set fields	{name text:required exec text:bool pwd text:required options text}
 set app		[Section new "app" ".app"]
 set left	[Section new "left" "[$app id].left"]
 set right	[Section new "right" "[$app id].right"]
-set form	[AgentConfig new "form" "[$left id].form" $fields ]
+set form	[AgentConfig new "agentconfig" "[$left id].agentconfig" $fields ]
 
 pack [$app id] -fill both
 pack [$left id] -side left -fill y
