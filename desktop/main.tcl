@@ -22,19 +22,42 @@ oo::class create Container {
 	}
 }
 
-oo::class create InputField {
-	method label_id {parent key} {
-		return "$parent.label_$key"
-	}
+oo::class create Section {
+	superclass Container
 	
-	method input_id {parent key} {
-		return "$parent.input_$key"
+	constructor {args} {
+		my setup_container {*}$args
 	}
 }
 
-oo::class create Repository {
-	variable Repository
-	
+oo::class create UserInput {
+	superclass Container
+	variable Repository Entries
+
+	constructor {args} {
+		
+		set name [lindex $args 0]
+		set path [lindex $args 1]
+		set fields [lindex $args 2]
+		
+		my setup_container $name $path
+		my setup_repository
+		set parent [my id]
+
+		foreach {key type} $fields {
+			my setup_input $parent $key $type
+			my display_input $parent $key	
+			set rule [lindex [split $type :] 1]
+			set child [my input_id $parent $key]
+			dict set Entries $child name $key
+			dict set Entries $child rule $rule
+		}
+		
+		my setup_submit $parent
+		my display_submit $parent
+		
+	}
+
 	method setup_repository {} {
 		array set Repository {}
 	}
@@ -54,84 +77,63 @@ oo::class create Repository {
 	method repo_print {} {
 		parray Repository
 	}
-}
-
-oo::class create TxtInput {
-	mixin -append InputField
-
-	method setup_txt_input {parent key} {
-		array set Value {}
-		set label [my label_id $parent $key]
-		set entry [my input_id $parent $key]
-		::ttk::label $label -text $key
-		::ttk::entry $entry	-textvariable [my repo_key $key] -background white -foreground black
-		grid $label $entry
+	
+	method input_label {parent key} {
+		return "$parent.label_$key"
 	}
-}
-
-oo::class create Form {
-	mixin -append TxtInput
-	variable Entries
-
-	method setup_form {fields} {
-
-		foreach {key type} $fields {
-			switch -glob -- $type {
-				text:* {
-					set rule [lindex [split $type :] 1]
-					set parent [my id]
-					set child [my input_id $parent $key]
-					my setup_txt_input $parent $key
-					dict set Entries $child name $key
-					dict set Entries $child rule $rule
-				}
-				default {
-					puts "Unsupported type: $type"
-				}
+	
+	method input_id {parent key} {
+		return "$parent.input_$key"
+	}
+	
+	method setup_input {parent key type} {
+		switch -glob $type {
+			text:* {
+				set label [my input_label $parent $key]
+				set entry [my input_id $parent $key]
+				::ttk::label $label -text $key
+				::ttk::entry $entry	-textvariable [my repo_key $key] -background white -foreground black				
+			}	
+			default {
+				puts "Unsuported type: $type" 	
 			}
 		}
 	}
-}
-
-oo::class create Section {
-	mixin -append Container
 	
-	constructor {args} {
-		my setup_container {*}$args
-	}
-}
-
-oo::class create AgentConfig {
-	mixin -append Container Form Repository
-	
-	constructor {args} {
-		set name [lindex $args 0]
-		set path [lindex $args 1]
-		set fields [lindex $args 2]
-		
-		my setup_repository
-		my setup_container $name $path
-		my setup_form $fields
-		
-		set submit [::ttk::button "[my id].submit" -text "Done" -command "[self] submit"]
-		grid $submit
+	method display_input {parent key} {
+		set label [my input_label $parent $key]
+		set entry [my input_id $parent $key]
+		grid $label $entry
 	}
 	
-	method debug {} {
+	method setup_submit {parent} {
+		::ttk::button "$parent.submit" -text "OK" -command "[self] submit"
+	}
+
+	method display_submit {parent} {
+		set button "$parent.submit"
+		grid $button
+	}
+
+	method debug_input {} {
 		puts ""
 		puts "Data submitted from [my name] at [my parent]"
 		puts "-----------------------------------------------------"
 		foreach {k v} [my repo_dump] {
 			puts "$k:\t$v"
 		}
-	}
+	}	
+}
+
+oo::class create AgentConfig {
+	mixin UserInput
 	
 	method submit {} {
-		my debug
+		my debug_input
 	}
 }
 
-set fields	{name text:required exec text:bool pwd text:required options text}
+set fields	{name text:required exec text:bool pwd text:required options text:optional}
 set app		[Section new "app" ".app"]
 set left	[Section new "left" "[$app id].left"]
 set right	[Section new "right" "[$app id].right"]
