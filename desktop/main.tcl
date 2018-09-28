@@ -35,12 +35,12 @@ oo::class create Repository {
 		array set Repository {}
 	}
 	
-	method repo_varname {name} {
-		return "[my varname Repository]($name)"
+	method repo_key {key} {
+		return [my varname Repository($key)]
 	}
 	
-	method repo_value {name} {
-		return [array get Repository $name]
+	method repo_val {key} {
+		return $Repository($key)
 	}
 }
 
@@ -52,7 +52,7 @@ oo::class create TxtInput {
 		set label [my label_id $parent $key]
 		set entry [my input_id $parent $key]
 		::ttk::label $label -text $key
-		::ttk::entry $entry	-textvariable [my repo_varname $key] -background white -foreground black
+		::ttk::entry $entry	-textvariable [my repo_key $key] -background white -foreground black
 		grid $label $entry
 	}
 }
@@ -106,7 +106,7 @@ oo::class create AgentConfig {
 	}
 	
 	method submit {} {
-		set result [::ttk::label "[my id].result" -text "exec = [my repo_value exec]" ]
+		set result [::ttk::label "[my id].result" -text "exec = [my repo_val exec]" ]
 		grid $result
 	}
 }
