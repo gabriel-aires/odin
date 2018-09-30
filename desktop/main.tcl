@@ -1,143 +1,28 @@
+#import packages
 package require Tk
+package require starkit
 
-oo::class create Container {
-	variable Name Path
+#initialize starpack
+starkit::startup
+set vfs_root [file dirname [file normalize [info script]]]
 
-	method setup_container {name path} {
-		set Name $name
-		set Path $path
-		set frame [::ttk::frame $Path]
-	}
-
-	method parent {} {
-		return [join [lrange [split $Path .] 0 end-1] .]
-	}
-	
-	method name {} {
-		return [lindex [split $Path .] end]
-	}
-	
-	method id {} {
-		return $Path
-	}
-}
-
-oo::class create Section {
-	superclass Container
-	
-	constructor {args} {
-		my setup_container {*}$args
-	}
-}
-
-oo::class create UserInput {
-	superclass Container
-	variable Repository Entries
-
-	constructor {args} {
-		
-		set name [lindex $args 0]
-		set path [lindex $args 1]
-		set fields [lindex $args 2]
-		
-		my setup_container $name $path
-		my setup_repository
-		set parent [my id]
-
-		foreach {key type} $fields {
-			my setup_input $parent $key $type
-			my display_input $parent $key	
-			set rule [lindex [split $type :] 1]
-			set child [my input_id $parent $key]
-			dict set Entries $child name $key
-			dict set Entries $child rule $rule
-		}
-		
-		my setup_submit $parent
-		my display_submit $parent
-		
-	}
-
-	method setup_repository {} {
-		array set Repository {}
-	}
-	
-	method repo_key {key} {
-		return [my varname Repository($key)]
-	}
-	
-	method repo_val {key} {
-		return $Repository($key)
-	}
-	
-	method repo_dump {} {
-		return [array get Repository]
-	}
-	
-	method repo_print {} {
-		parray Repository
-	}
-	
-	method input_label {parent key} {
-		return "$parent.label_$key"
-	}
-	
-	method input_id {parent key} {
-		return "$parent.input_$key"
-	}
-	
-	method setup_input {parent key type} {
-		switch -glob $type {
-			text:* {
-				set label [my input_label $parent $key]
-				set entry [my input_id $parent $key]
-				::ttk::label $label -text $key
-				::ttk::entry $entry	-textvariable [my repo_key $key] -background white -foreground black				
-			}	
-			default {
-				puts "Unsuported type: $type" 	
-			}
-		}
-	}
-	
-	method display_input {parent key} {
-		set label [my input_label $parent $key]
-		set entry [my input_id $parent $key]
-		grid $label $entry
-	}
-	
-	method setup_submit {parent} {
-		::ttk::button "$parent.submit" -text "OK" -command "[self] submit"
-	}
-
-	method display_submit {parent} {
-		set button "$parent.submit"
-		grid $button
-	}
-
-	method debug_input {} {
-		puts ""
-		puts "Data submitted from [my name] at [my parent]"
-		puts "-----------------------------------------------------"
-		foreach {k v} [my repo_dump] {
-			puts "$k:\t$v"
-		}
-	}	
-}
+#import classes
+source [file join $vfs_root container.tcl]
+source [file join $vfs_root form.tcl]
 
 oo::class create AgentConfig {
-	mixin UserInput
+	mixin Form
 	
 	method submit {} {
 		my debug_input
 	}
 }
 
-set fields	{name text:required exec text:bool pwd text:required options text:optional}
-set app		[Section new "app" ".app"]
-set left	[Section new "left" "[$app id].left"]
-set right	[Section new "right" "[$app id].right"]
-set form	[AgentConfig new "agentconfig" "[$left id].agentconfig" $fields ]
+set fields			{name text:required exec text:bool pwd text:required options text:optional}
+set app			[Section new "app" ".app"]
+set left			[Section new "left" "[$app id].left"]
+set right			[Section new "right" "[$app id].right"]
+set form			[AgentConfig new "agentconfig" "[$left id].agentconfig" $fields ]
 
 pack [$app id] -fill both
 pack [$left id] -side left -fill y
