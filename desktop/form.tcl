@@ -1,5 +1,6 @@
 oo::class create Form {
-	superclass Container Repository
+	superclass Container
+	mixin Repository Validation
 	variable Entries
 
 	constructor {args} {
@@ -7,9 +8,11 @@ oo::class create Form {
 		set path 		[lindex $args 0]
 		set label		[lindex $args 1]
 		set fields [lindex $args 2]
+		set rules		[lindex $args 3]
 		
 		my setup_container $path $label
 		my setup_repository
+		my setup_validation $rules
 		set parent [my id]
 
 		foreach {key type} $fields {
@@ -18,7 +21,7 @@ oo::class create Form {
 			set rule [lindex [split $type :] 1]
 			set child [my input_id $parent $key]
 			dict set Entries $child name $key
-			dict set Entries $child rule $rule
+			dict set Entries $child ruleset $rule
 		}
 		
 		my setup_submit $parent
@@ -54,8 +57,11 @@ oo::class create Form {
 				::ttk::checkbutton $entry -variable [my repo_key $key]
 			}
 			list:optional* - list:required* {
+				set rule [lindex [split $type ,] 1]
+				set pattern [my get_rule $rule]
+				set values [split [string trimright [string trimleft $pattern ^] $] |]
 				::ttk::label $label -text $key
-				::ttk::combobox $entry -textvariable [my repo_key $key] -state readonly -values [lrange [split $type ,] 1 end] -width [- $width 3]
+				::ttk::combobox $entry -textvariable [my repo_key $key] -state readonly -values $values -width [- $width 3]
 			}
 			default {
 				puts "Unsuported type: $type" 	

@@ -20,21 +20,36 @@ namespace import ::tcl::mathfunc::srand
 #import classes
 source [file join $vfs_root container.tcl]
 source [file join $vfs_root repository.tcl]
+source [file join $vfs_root validation.tcl]
 source [file join $vfs_root form.tcl]
 
 oo::class create AgentConfig {
-	mixin Form
+	superclass Form
 	
 	method submit {} {
 		my debug_input
 	}
 }
 
-set fields			{name text:required exec text:optional pwd password:required options text:optional enable bool:required choose list:required,deploy,build}
+set rules {
+	required		.
+	optional		{}
+	task_type	^deploy|build$
+}
+
+set fields {
+	name		text:required
+	exec		text:optional
+	pwd		password:required
+	options		text:optional
+	enable		bool:required
+	choose		list:required,task_type
+}
+
 set app			[Section new ".app"]
 set left			[Section new "[$app id].left"]
 set right			[Section new "[$app id].right"]
-set form			[AgentConfig new "[$left id].agentconfig" "Agent Settings" $fields ]
+set form			[AgentConfig new "[$left id].agentconfig" "Agent Settings" $fields $rules]
 
 pack [$app id] -fill both
 pack [$left id] -side left -fill y
