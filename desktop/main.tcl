@@ -27,6 +27,7 @@ oo::class create AgentConfig {
 	superclass Form
 	
 	method submit {} {
+		my validate_form
 		my debug_input
 	}
 }
@@ -35,12 +36,13 @@ set rules {
 	required		.
 	optional		{}
 	task_type	^deploy|build$
+	min_size		......
 }
 
 set fields {
 	name		text:required
 	exec		text:optional
-	pwd		password:required
+	pwd		password:required,min_size
 	options		text:optional
 	enable		bool:required
 	choose		list:required,task_type

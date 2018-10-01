@@ -18,14 +18,16 @@ oo::class create Form {
 		foreach {key type} $fields {
 			my setup_input $parent $key $type
 			my display_input $parent $key	
-			set rule [lindex [split $type :] 1]
+			set ruleset [lindex [split $type :] 1]
 			set child [my input_id $parent $key]
 			dict set Entries $child name $key
-			dict set Entries $child ruleset $rule
+			dict set Entries $child ruleset $ruleset
 		}
 		
 		my setup_submit $parent
 		my display_submit $parent
+		my setup_help $parent
+		my display_help $parent
 		
 	}
 	
@@ -75,13 +77,30 @@ oo::class create Form {
 		grid $label $entry -padx 2p -pady 2p -sticky w
 	}
 	
+	method setup_help {parent} {
+		set [my repo_key HELP_MSG] "Enter requested information"
+		::ttk::label "$parent.help" -textvariable [my repo_key HELP_MSG] -justify center
+		my config_help $parent {-foreground #000000}
+		
+	}
+	
+	method config_help {parent options} {
+		$parent.help configure {*}$options
+	}
+	
+	method display_help {parent} {
+		set window "$parent.help"
+		grid $window -columnspan 2
+			
+	}
+	
 	method setup_submit {parent} {
 		::ttk::button "$parent.submit" -text "OK" -command "[self] submit"
 	}
 
 	method display_submit {parent} {
 		set button "$parent.submit"
-		grid $button -padx 2p -pady 2p -columnspan 2
+		grid $button -columnspan 2 -pady 4p
 	}
 
 	method debug_input {} {
@@ -91,6 +110,31 @@ oo::class create Form {
 		foreach {k v} [my repo_dump] {
 			puts "$k:\t$v"
 		}
-	}	
+	}
+	
+	method validate_form {} {
+		
+		set [my repo_key HELP_MSG] {}
+		
+		foreach child [dict keys $Entries] {
+			set key			[dict get $Entries $child name]
+			set value			[my repo_val $key]
+			set rule_list		[dict get $Entries $child ruleset]
+			set rules			[split $rule_list ,]
+			set error			0
+			
+			foreach rule $rules {
+				if [! [my match_rule $rule $value]] {
+					lappend [my repo_key HELP_MSG] "Invalid input for $key ($rule)"
+					set error 1
+				}
+			}
+		}
+		
+		set [my repo_key HELP_MSG] [join [my repo_val HELP_MSG] "\n"]
+		my config_help [my id] {-foreground #c3063c}
+		
+		return $error
+	}
 }
 
