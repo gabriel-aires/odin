@@ -55,13 +55,28 @@ oo::class create Form {
 	}
 	
 	method setup_input {parent key type} {
+		
+		set label [my input_label $parent $key]
+		set entry [my input_id $parent $key]
+		set width 30
+		
 		switch -glob $type {
-			text:* {
-				set label [my input_label $parent $key]
-				set entry [my input_id $parent $key]
+			text:optional* - text:required* {
 				::ttk::label $label -text $key
-				::ttk::entry $entry	-textvariable [my repo_key $key] -background white -foreground black				
-			}	
+				::ttk::entry $entry	-textvariable [my repo_key $key] -background white -foreground black	-width $width
+			}
+			password:optional* - password:required* {
+				::ttk::label $label -text $key
+				::ttk::entry $entry	-textvariable [my repo_key $key] -show "*" -background white -foreground black -width $width
+			}
+			bool:optional* - bool:required* {
+				::ttk::label $label -text $key
+				::ttk::checkbutton $entry -variable [my repo_key $key]
+			}
+			list:optional* - list:required* {
+				::ttk::label $label -text $key
+				::ttk::combobox $entry -textvariable [my repo_key $key] -state readonly -values [lrange [split $type ,] 1 end] -width [- $width 3]
+			}
 			default {
 				puts "Unsuported type: $type" 	
 			}

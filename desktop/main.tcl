@@ -1,10 +1,14 @@
 #import packages
 package require Tk
 package require starkit
+package require tcl::tommath
 
 #initialize starpack
 starkit::startup
 set vfs_root [file dirname [file normalize [info script]]]
+
+#import namespaces
+namespace import ::tcl::mathop::*
 
 #import classes
 source [file join $vfs_root container.tcl]
@@ -18,7 +22,7 @@ oo::class create AgentConfig {
 	}
 }
 
-set fields			{name text:required exec text:bool pwd text:required options text:optional}
+set fields			{name text:required exec text:optional pwd password:required options text:optional enable bool:required choose list:required,deploy,build}
 set app			[Section new ".app"]
 set left			[Section new "[$app id].left"]
 set right			[Section new "[$app id].right"]
