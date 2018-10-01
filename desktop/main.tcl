@@ -1,7 +1,6 @@
 #import packages
 package require Tk
 package require starkit
-package require tcl::tommath
 
 #initialize starpack
 starkit::startup
@@ -9,6 +8,14 @@ set vfs_root [file dirname [file normalize [info script]]]
 
 #import namespaces
 namespace import ::tcl::mathop::*
+namespace import ::tcl::mathfunc::abs
+namespace import ::tcl::mathfunc::ceil
+namespace import ::tcl::mathfunc::floor
+namespace import ::tcl::mathfunc::max
+namespace import ::tcl::mathfunc::min
+namespace import ::tcl::mathfunc::rand
+namespace import ::tcl::mathfunc::round
+namespace import ::tcl::mathfunc::srand
 
 #import classes
 source [file join $vfs_root container.tcl]
