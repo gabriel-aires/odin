@@ -41,28 +41,34 @@ oo::class create Form {
 	
 	method setup_input {parent key type} {
 		
-		set label [my input_label $parent $key]
-		set entry [my input_id $parent $key]
-		set width 30
+		set label			[my input_label $parent $key]
+		set entry			[my input_id $parent $key]
+		set ruleset			[split [lindex [split $type :] 1] ,]
+		set width			30
+		set name			$key
+		
+		if {"required" in $ruleset} {
+			append name { *}
+		}
 		
 		switch -glob $type {
-			text:optional* - text:required* {
-				::ttk::label $label -text $key
+			text:* {
+				::ttk::label $label -text $name
 				::ttk::entry $entry	-textvariable [my repo_key $key] -background white -foreground black	-width $width
 			}
-			password:optional* - password:required* {
-				::ttk::label $label -text $key
+			password:* {
+				::ttk::label $label -text $name
 				::ttk::entry $entry	-textvariable [my repo_key $key] -show "*" -background white -foreground black -width $width
 			}
-			bool:optional* - bool:required* {
-				::ttk::label $label -text $key
+			bool:* {
+				::ttk::label $label -text $name
 				::ttk::checkbutton $entry -variable [my repo_key $key]
 			}
-			list:optional* - list:required* {
-				set rule [lindex [split $type ,] 1]
+			list:* {
+				set rule [lindex $ruleset end]
 				set pattern [my get_rule $rule]
 				set values [split [string trimright [string trimleft $pattern ^] $] |]
-				::ttk::label $label -text $key
+				::ttk::label $label -text $name
 				::ttk::combobox $entry -textvariable [my repo_key $key] -state readonly -values $values -width [- $width 3]
 			}
 			default {
@@ -78,7 +84,7 @@ oo::class create Form {
 	}
 	
 	method setup_help {parent} {
-		set [my repo_key HELP_MSG] "Enter requested information"
+		set [my repo_key HELP_MSG] "Enter required information (*)"
 		::ttk::label "$parent.help" -textvariable [my repo_key HELP_MSG] -justify center
 		my config_help $parent {-foreground #000000}
 		
@@ -115,13 +121,13 @@ oo::class create Form {
 	method validate_form {} {
 		
 		set [my repo_key HELP_MSG] {}
+		set error	0
 		
 		foreach child [dict keys $Entries] {
 			set key			[dict get $Entries $child name]
 			set value			[my repo_val $key]
 			set rule_list		[dict get $Entries $child ruleset]
 			set rules			[split $rule_list ,]
-			set error			0
 			
 			foreach rule $rules {
 				if [! [my match_rule $rule $value]] {
@@ -138,6 +144,8 @@ oo::class create Form {
 			set [my repo_key HELP_MSG] "Validation Successful"
 			my config_help [my id] {-foreground #0edc75}		
 		}
+		
+		update
 		
 		return $error
 	}
