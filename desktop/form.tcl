@@ -145,9 +145,6 @@ oo::class create Form {
 			my config_help [my id] {-foreground #0edc75}		
 		}
 		
-		update
-		
 		return $error
 	}
 }
-

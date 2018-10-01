@@ -51,7 +51,7 @@ set fields {
 set app			[Section new ".app"]
 set left			[Section new "[$app id].left"]
 set right			[Section new "[$app id].right"]
-set form			[AgentConfig new "[$left id].agentconfig" "Agent Settings" $fields $rules]
+set form			[AgentConfig new "[$left id].agentconfig" "Agent Settings" $fields $rules ]
 
 pack [$app id] -fill both
 pack [$left id] -side left -fill y
