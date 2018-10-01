@@ -1,10 +1,15 @@
 oo::class create Container {
-	variable Name Path
+	variable Path Label
 
-	method setup_container {name path} {
-		set Name $name
+	method setup_container {path {label ""}} {
 		set Path $path
-		set frame [::ttk::frame $Path]
+		set Label $label
+		
+		if {$Label eq ""} {		
+			::ttk::frame $Path -padding 2p
+		} else {
+			::ttk::labelframe $Path -text $Label -padding 2p
+		}
 	}
 
 	method parent {} {

@@ -4,11 +4,11 @@ oo::class create Form {
 
 	constructor {args} {
 		
-		set name [lindex $args 0]
-		set path [lindex $args 1]
+		set path 		[lindex $args 0]
+		set label		[lindex $args 1]
 		set fields [lindex $args 2]
 		
-		my setup_container $name $path
+		my setup_container $path $label
 		my setup_repository
 		set parent [my id]
 
@@ -71,7 +71,7 @@ oo::class create Form {
 	method display_input {parent key} {
 		set label [my input_label $parent $key]
 		set entry [my input_id $parent $key]
-		grid $label $entry
+		grid $label $entry -padx 2p -pady 2p -sticky w
 	}
 	
 	method setup_submit {parent} {
@@ -80,7 +80,7 @@ oo::class create Form {
 
 	method display_submit {parent} {
 		set button "$parent.submit"
-		grid $button
+		grid $button -padx 2p -pady 2p -columnspan 2
 	}
 
 	method debug_input {} {

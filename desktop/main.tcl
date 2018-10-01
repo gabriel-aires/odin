@@ -19,10 +19,10 @@ oo::class create AgentConfig {
 }
 
 set fields			{name text:required exec text:bool pwd text:required options text:optional}
-set app			[Section new "app" ".app"]
-set left			[Section new "left" "[$app id].left"]
-set right			[Section new "right" "[$app id].right"]
-set form			[AgentConfig new "agentconfig" "[$left id].agentconfig" $fields ]
+set app			[Section new ".app"]
+set left			[Section new "[$app id].left"]
+set right			[Section new "[$app id].right"]
+set form			[AgentConfig new "[$left id].agentconfig" "Agent Settings" $fields ]
 
 pack [$app id] -fill both
 pack [$left id] -side left -fill y
