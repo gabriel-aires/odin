@@ -19,6 +19,7 @@ namespace import ::tcl::mathfunc::srand
 
 #import classes
 source [file join $vfs_root container.tcl]
+source [file join $vfs_root repository.tcl]
 source [file join $vfs_root form.tcl]
 
 oo::class create AgentConfig {

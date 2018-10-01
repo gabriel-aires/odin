@@ -1,6 +1,6 @@
 oo::class create Form {
-	superclass Container
-	variable Repository Entries
+	superclass Container Repository
+	variable Entries
 
 	constructor {args} {
 		
@@ -24,26 +24,6 @@ oo::class create Form {
 		my setup_submit $parent
 		my display_submit $parent
 		
-	}
-
-	method setup_repository {} {
-		array set Repository {}
-	}
-	
-	method repo_key {key} {
-		return [my varname Repository($key)]
-	}
-	
-	method repo_val {key} {
-		return $Repository($key)
-	}
-	
-	method repo_dump {} {
-		return [array get Repository]
-	}
-	
-	method repo_print {} {
-		parray Repository
 	}
 	
 	method input_label {parent key} {
