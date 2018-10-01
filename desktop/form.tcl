@@ -131,8 +131,13 @@ oo::class create Form {
 			}
 		}
 		
-		set [my repo_key HELP_MSG] [join [my repo_val HELP_MSG] "\n"]
-		my config_help [my id] {-foreground #c3063c}
+		if $error {
+			set [my repo_key HELP_MSG] [join [my repo_val HELP_MSG] "\n"]
+			my config_help [my id] {-foreground #c3063c}
+		} else {
+			set [my repo_key HELP_MSG] "Validation Successful"
+			my config_help [my id] {-foreground #0edc75}		
+		}
 		
 		return $error
 	}
