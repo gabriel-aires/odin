@@ -16,10 +16,31 @@ CREATE TABLE IF NOT EXISTS `user_groups` (
 	`group_id`	INTEGER NOT NULL
 );
 CREATE TABLE IF NOT EXISTS `user` (
-	`name`	TEXT NOT NULL,
+	`name`	TEXT NOT NULL UNIQUE,
 	`pass`	TEXT NOT NULL,
 	`active`	INTEGER NOT NULL,
 	`type_id`	INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS `step` (
+	`name`	TEXT NOT NULL UNIQUE,
+	`type`	TEXT NOT NULL,
+	`script_id`	INTEGER NOT NULL UNIQUE,
+	`requirements`	TEXT,
+	`artifacts`	TEXT,
+	`arguments`	TEXT,
+	`mutexes`	TEXT,
+	`reversible`	INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS `script` (
+	`name`	TEXT NOT NULL UNIQUE,
+	`description`	TEXT NOT NULL,
+	`revision`	INTEGER NOT NULL UNIQUE,
+	`content`	TEXT NOT NULL UNIQUE,
+	`arguments`	TEXT
+);
+CREATE TABLE IF NOT EXISTS `rule` (
+	`name`	TEXT NOT NULL UNIQUE,
+	`pattern`	TEXT
 );
 CREATE TABLE IF NOT EXISTS `role_type` (
 	`name`	TEXT NOT NULL,
@@ -28,11 +49,18 @@ CREATE TABLE IF NOT EXISTS `role_type` (
 INSERT INTO `role_type` VALUES ('app','defines an application access policy');
 INSERT INTO `role_type` VALUES ('env','defines an environment access policy');
 CREATE TABLE IF NOT EXISTS `role` (
-	`name`	TEXT NOT NULL,
+	`name`	TEXT NOT NULL UNIQUE,
 	`description`	TEXT,
 	`active`	INTEGER NOT NULL,
 	`access_id`	INTEGER NOT NULL,
 	`type_id`	INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS `lib` (
+	`name`	TEXT NOT NULL UNIQUE,
+	`description`	TEXT NOT NULL,
+	`revision`	INTEGER NOT NULL UNIQUE,
+	`content`	TEXT NOT NULL UNIQUE,
+	`arguments`	TEXT
 );
 CREATE TABLE IF NOT EXISTS `group_roles` (
 	`group_id`	INTEGER NOT NULL,
@@ -45,10 +73,13 @@ CREATE TABLE IF NOT EXISTS `group_permissions` (
 	`enforce_id`	INTEGER NOT NULL
 );
 CREATE TABLE IF NOT EXISTS `group` (
-	`name`	TEXT NOT NULL,
+	`name`	TEXT NOT NULL UNIQUE,
 	`active`	INTEGER NOT NULL
 );
 INSERT INTO `group` VALUES ('common',1);
+CREATE TABLE IF NOT EXISTS `environment` (
+	`name`	TEXT NOT NULL UNIQUE
+);
 CREATE TABLE IF NOT EXISTS `enforce_type` (
 	`name`	TEXT NOT NULL,
 	`description`	TEXT NOT NULL
@@ -56,6 +87,9 @@ CREATE TABLE IF NOT EXISTS `enforce_type` (
 INSERT INTO `enforce_type` VALUES ('inherit','Effective permission calculated at runtime');
 INSERT INTO `enforce_type` VALUES ('grant','Explicitly granted access');
 INSERT INTO `enforce_type` VALUES ('deny','Explicitly denied access');
+CREATE TABLE IF NOT EXISTS `application` (
+	`name`	TEXT NOT NULL UNIQUE
+);
 CREATE TABLE IF NOT EXISTS `access_type` (
 	`name`	TEXT,
 	`description`	TEXT
