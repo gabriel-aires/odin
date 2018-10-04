@@ -21,6 +21,12 @@ CREATE TABLE IF NOT EXISTS `user` (
 	`active`	INTEGER NOT NULL,
 	`type_id`	INTEGER NOT NULL
 );
+CREATE TABLE IF NOT EXISTS `task` (
+	`name`	TEXT NOT NULL UNIQUE,
+	`description`	TEXT NOT NULL UNIQUE,
+	`steps`	TEXT NOT NULL UNIQUE,
+	`pipeline`	TEXT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS `step` (
 	`name`	TEXT NOT NULL UNIQUE,
 	`type`	TEXT NOT NULL,
@@ -36,7 +42,8 @@ CREATE TABLE IF NOT EXISTS `script` (
 	`description`	TEXT NOT NULL,
 	`revision`	INTEGER NOT NULL UNIQUE,
 	`content`	TEXT NOT NULL UNIQUE,
-	`arguments`	TEXT
+	`arguments`	TEXT,
+	`dependencies`	TEXT
 );
 CREATE TABLE IF NOT EXISTS `rule` (
 	`name`	TEXT NOT NULL UNIQUE,
