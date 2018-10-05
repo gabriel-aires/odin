@@ -18,9 +18,9 @@ namespace import ::tcl::mathfunc::round
 namespace import ::tcl::mathfunc::srand
 
 #import classes
+source [file join $vfs_root repository.tcl]
 source [file join $vfs_root window.tcl]
 source [file join $vfs_root container.tcl]
-source [file join $vfs_root repository.tcl]
 source [file join $vfs_root validation.tcl]
 source [file join $vfs_root form.tcl]
 
@@ -28,7 +28,7 @@ oo::class create AgentConfig {
 	superclass Form
 	
 	method submit {} {
-		my validate_form
+		my validate_formclea
 		my debug_input
 	}
 }
@@ -72,3 +72,6 @@ pack [$form id] -side left -expand 1
 
 tk_optionMenu [$right id].foo myVar Foo Bar Boo Spong Wibble
 pack [$right id].foo
+
+$conf_popup focus
+
