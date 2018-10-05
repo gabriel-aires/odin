@@ -18,6 +18,7 @@ namespace import ::tcl::mathfunc::round
 namespace import ::tcl::mathfunc::srand
 
 #import classes
+source [file join $vfs_root window.tcl]
 source [file join $vfs_root container.tcl]
 source [file join $vfs_root repository.tcl]
 source [file join $vfs_root validation.tcl]
@@ -48,12 +49,26 @@ set fields {
 	choose		list:required,task_type
 }
 
+#main widget layout
+set main			[Window new .]
 set app			[Section new ".app"]
 set left			[Section new "[$app id].left"]
 set right			[Section new "[$app id].right"]
-set form			[AgentConfig new "[$left id].agentconfig" "Agent Settings" $fields $rules ]
+
+#popups
+set conf_popup	[Window new "[$app id].conf_popup"]
+set form			[AgentConfig new "[$conf_popup id].agentconfig" "Agent Settings" $fields $rules ]
+
+$main assign_members [list $app $left $right]
+$main title "Odin Administrator Interface"
+$conf_popup assign_members $form
+$conf_popup configure [list -padx 4p -pady 4p]
+$conf_popup title "Configuration..."
 
 pack [$app id] -fill both
 pack [$left id] -side left -fill y
 pack [$right id] -side right -fill y
 pack [$form id] -side left -expand 1
+
+tk_optionMenu [$right id].foo myVar Foo Bar Boo Spong Wibble
+pack [$right id].foo
