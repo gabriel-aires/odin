@@ -1,6 +1,7 @@
 #import packages
 package require Tk
 package require starkit
+package require sha256
 
 #initialize starpack
 starkit::startup
@@ -24,8 +25,17 @@ source [file join $vfs_root repository.tcl]
 source [file join $vfs_root validation.tcl]
 source [file join $vfs_root form.tcl]
 
-oo::class create AgentConfig {
+oo::class create Login {
 	superclass Form
+	
+	method submit {} {
+		my validate_form
+		my debug_input
+	}	
+}
+
+oo::class create AgentConfig {
+	superclass Form	
 	
 	method submit {} {
 		my validate_form
@@ -40,7 +50,12 @@ set rules {
 	min_size		......
 }
 
-set fields {
+set login_fields {
+	login		text:required
+	password		text:required
+}
+
+set config_fields {
 	name		text:required
 	exec		text:optional
 	pwd		password:required,min_size
@@ -56,11 +71,18 @@ set left			[Section new "[$app id].left"]
 set right			[Section new "[$app id].right"]
 
 #popups
+set auth_popup	[Window new "[$app id].auth_popup"]
+set signin			[AgentConfig new "[$auth_popup id].login" {} $login_fields $rules ]
+
 set conf_popup	[Window new "[$app id].conf_popup"]
-set form			[AgentConfig new "[$conf_popup id].agentconfig" "Agent Settings" $fields $rules ]
+set form			[AgentConfig new "[$conf_popup id].agentconfig" "Agent Settings" $config_fields $rules ]
 
 $main assign_members [list $app $left $right]
 $main title "Odin Administrator Interface"
+
+$auth_popup assign_members $signin
+$auth_popup title "Login"
+
 $conf_popup assign_members $form
 $conf_popup configure [list -padx 4p -pady 4p]
 $conf_popup title "Configuration..."
@@ -68,10 +90,13 @@ $conf_popup title "Configuration..."
 pack [$app id] -fill both
 pack [$left id] -side left -fill y
 pack [$right id] -side right -fill y
+pack [$signin id]
 pack [$form id] -side left -expand 1
 
 tk_optionMenu [$right id].foo myVar Foo Bar Boo Spong Wibble
 pack [$right id].foo
 
-$conf_popup focus
+$auth_popup focus
+
+puts [sha2::sha256 hello]
 
