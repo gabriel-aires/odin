@@ -1,7 +1,7 @@
 oo::class create Form {
 	superclass Container
 	mixin Repository Validation
-	variable Entries
+	variable Entries HelpMsg
 
 	constructor {args} {
 		
@@ -84,8 +84,8 @@ oo::class create Form {
 	}
 	
 	method setup_help {parent} {
-		set [my repo_key HELP_MSG] "Enter required information (*)"
-		::ttk::label "$parent.help" -textvariable [my repo_key HELP_MSG] -justify center
+		set HelpMsg "Enter required information (*)"
+		::ttk::label "$parent.help" -text $HelpMsg -justify center
 		my config_help $parent {-foreground #000000}
 		
 	}
@@ -118,9 +118,9 @@ oo::class create Form {
 		}
 	}
 	
-	method validate_form {} {
+	method input_error? {} {
 		
-		set [my repo_key HELP_MSG] {}
+		set HelpMsg {}
 		set error	0
 		
 		foreach child [dict keys $Entries] {
@@ -131,18 +131,10 @@ oo::class create Form {
 			
 			foreach rule $rules {
 				if [! [my match_rule $rule $value]] {
-					lappend [my repo_key HELP_MSG] "Invalid input for $key ($rule)"
+					append HelpMsg "Invalid input for $key ($rule)\n"
 					set error 1
 				}
 			}
-		}
-		
-		if $error {
-			set [my repo_key HELP_MSG] [join [my repo_val HELP_MSG] "\n"]
-			my config_help [my id] {-foreground #c3063c}
-		} else {
-			set [my repo_key HELP_MSG] "Validation Successful"
-			my config_help [my id] {-foreground #0edc75}		
 		}
 		
 		return $error

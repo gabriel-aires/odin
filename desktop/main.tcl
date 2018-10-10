@@ -2,6 +2,7 @@
 package require Tk
 package require starkit
 package require sha256
+package require sqlite3
 
 #initialize starpack
 starkit::startup
@@ -25,11 +26,36 @@ source [file join $vfs_root repository.tcl]
 source [file join $vfs_root validation.tcl]
 source [file join $vfs_root form.tcl]
 
+#open database
+sqlite3 db [file dirname $::vfs_root]/db/odin.db
+
 oo::class create Login {
 	superclass Form
 	
+	method auth_error? {} {
+		set name			[my repo_val login]
+		set hash			[sha2::sha256 [my repo_val password]]
+		
+		set search 			[db eval	{SELECT u.name
+							FROM user u
+							INNER JOIN user_type t	on u.type_id = t.rowid
+							WHERE u.active = 1 AND t.name = 'admin' AND u.name = :name AND u.pass = :hash
+					}]
+					
+		return [ne $name $search]
+	}
+	
 	method submit {} {
-		my validate_form
+		my variable HelpMsg
+		
+		if {[my input_error?]} {
+			my config_help [my id] [list -text $HelpMsg -foreground #c3063c]
+		} elseif {[my auth_error?]} {
+			my config_help [my id] [list -text {Invalid User/Password} -foreground #c3063c]
+		} else {
+			my config_help [my id] [list -text {Authentication Successful} -foreground #2bdb64]			
+		}
+		
 		my debug_input
 	}	
 }
@@ -38,27 +64,31 @@ oo::class create AgentConfig {
 	superclass Form	
 	
 	method submit {} {
-		my validate_form
+		my variable HelpMsg
+		if [my input_error?] {
+			my config_help [my id] [list -text $HelpMsg -foreground #c3063c]
+		}
 		my debug_input
 	}
 }
 
+#initialize configuration
 set rules {
-	required		.
-	optional		{}
-	task_type	^deploy|build$
-	min_size		......
+	required			.
+	optional			{}
+	task_type			^deploy|build$
+	password_size		........
 }
 
 set login_fields {
 	login		text:required
-	password		text:required
+	password		password:required,password_size
 }
 
 set config_fields {
 	name		text:required
 	exec		text:optional
-	pwd		password:required,min_size
+	pwd		password:required,password_size
 	options		text:optional
 	enable		bool:required
 	choose		list:required,task_type
@@ -72,7 +102,7 @@ set right			[Section new "[$app id].right"]
 
 #popups
 set auth_popup	[Window new "[$app id].auth_popup"]
-set signin			[AgentConfig new "[$auth_popup id].login" {} $login_fields $rules ]
+set signin			[Login new "[$auth_popup id].login" {} $login_fields $rules ]
 
 set conf_popup	[Window new "[$app id].conf_popup"]
 set form			[AgentConfig new "[$conf_popup id].agentconfig" "Agent Settings" $config_fields $rules ]
@@ -98,5 +128,4 @@ pack [$right id].foo
 
 $auth_popup focus
 
-puts [sha2::sha256 hello]
-
+db close
