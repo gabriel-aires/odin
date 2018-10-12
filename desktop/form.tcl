@@ -94,6 +94,24 @@ oo::class create Form {
 		$parent.help configure {*}$options
 	}
 	
+	method update_help {level {msg ""}} {
+		if {$msg ne ""} {
+			set HelpMsg $msg
+		}
+		
+		switch $level {
+			INFO {
+				my config_help [my id] [list -text $HelpMsg -foreground #000000]
+			}
+			ERROR {
+				my config_help [my id] [list -text $HelpMsg -foreground #c3063c]
+			}
+			SUCCESS {
+				my config_help [my id] [list -text $HelpMsg -foreground #2bdb64]		
+			}
+		}
+	}
+	
 	method display_help {parent} {
 		set window "$parent.help"
 		grid $window -columnspan 2
@@ -119,8 +137,7 @@ oo::class create Form {
 	}
 	
 	method input_error? {} {
-		
-		set HelpMsg {}
+		set details {}
 		set error	0
 		
 		foreach child [dict keys $Entries] {
@@ -131,12 +148,13 @@ oo::class create Form {
 			
 			foreach rule $rules {
 				if [! [my match_rule $rule $value]] {
-					append HelpMsg "Invalid input for $key ($rule)\n"
+					lappend details "Invalid input for $key ($rule)"
 					set error 1
 				}
 			}
 		}
 		
+		set HelpMsg [join $details "\n"]
 		return $error
 	}
 }
