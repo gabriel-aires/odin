@@ -1,11 +1,11 @@
 #import packages
 package require Tk
-#package require starkit
+package require starkit
 package require sha256
 package require sqlite3
 
 #initialize starpack
-#starkit::startup
+starkit::startup
 set vfs_root [file dirname [file normalize [info script]]]
 
 #import namespaces

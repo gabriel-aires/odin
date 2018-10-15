@@ -1,7 +1,11 @@
 {
+  "asset_folder":     "assets",
   "mod_folder":       "modules",
+  "wrap_folder":      "wrap",  
   "lib_path":         "lib",
-  "wrap_folder":      "wrap",
+  "api_path":         "api",  
+  "web_path":         "web",
+  "desktop_path":     "desktop",
   "build_path":       "build",
   "tcl_bin":          "tclsh",
   "platforms":        [ "freebsd", "linux", "windows" ],
@@ -12,14 +16,16 @@
       "src_pkgs":     [ "wapp1.0" ],
       "dll_pkgs":     [ "twapi4.3.5" ],
       "tcp_port":     "3000",
-      "api_path":     "api",
-      "web_path":     "web",
       "web_ctx":      "/odin",      
       "web_assets":   [ "logo_black.png", "logo_white.png" ],
-      "asset_folder": "assets",
       "html_folder":  "html",
       "elm_bin":      "elm"
     },
+    "desktop": {
+      "exe_name":     "odin-admin",
+      "src_pkgs":     [],
+      "dll_pkgs":     []
+    },    
     "agent": {
       "exe_name":     "odin-agent",
       "src_pkgs":     [],
