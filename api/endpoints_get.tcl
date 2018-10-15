@@ -2,7 +2,7 @@
 proc endpoint-get-index {_} {
 	wapp-allow-xorigin-params
 	wapp-content-security-policy "off"
-	serve $conf::asset_path/index.html
+	serve $conf::html_path/index.html
 }
 
 #serve static assets

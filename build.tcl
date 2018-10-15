@@ -9,7 +9,7 @@ dict with cfg {}
 dict with cfg targets server {}
 
 #available build commands
-proc clean {}		{global web_path build_path asset_folder ; file delete -force "elm-stuff" "$web_path/$asset_folder/index.html" $build_path}
+proc clean {}		{global build_path ; file delete -force "elm-stuff" $build_path}
 proc debug {}		{global production ; set production 0}
 proc release {}		{global production ; set production 1}
 
@@ -24,6 +24,7 @@ set sdx_kit			"sdx-20110317.kit"
 set app_vfs			"$build_path/$exe_name.vfs"
 set mod_path 		"$app_vfs/$mod_folder"
 set asset_path		"$app_vfs/$asset_folder"
+set html_path		"$app_vfs/$html_folder"
 set wrap_path		"$app_vfs/$wrap_folder"
 set deps_list		"$src_pkgs"
 set elm_opts		""
@@ -56,13 +57,13 @@ if {$production} {
 set elm_cmd	"$elm_bin make $web_path/Main.elm $elm_opts"
 puts "Building webapp ($elm_cmd)"
 exec {*}$elm_cmd
-file rename -force "index.html" $web_path/$asset_folder
 
 #build embedded tcl server
 set runtime [file normalize $wrap_folder/$tcl_kit]
 file mkdir $build_path
 file mkdir $app_vfs
 file mkdir $mod_path
+file mkdir $html_path
 
 foreach mod $deps_list {
 	file copy -force "$lib_path/$mod" $mod_path
@@ -72,8 +73,10 @@ foreach srcfile [glob $api_path/*] {
 	file copy -force $srcfile $app_vfs
 }
 
+file rename -force "index.html" $html_path
+
 file copy -force tcl.json $app_vfs
-file copy -force $web_path/$asset_folder $app_vfs
+file copy -force $asset_folder $app_vfs
 file copy -force $wrap_folder $app_vfs
 file copy -force $wrap_folder/$tcl_kit $build_path
 file copy -force $wrap_folder/$sdx_kit $build_path/sdx.kit
