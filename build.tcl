@@ -9,7 +9,7 @@ dict with cfg {}
 dict with cfg targets server {}
 
 #available build commands
-proc clean {}		{global build_path ; file delete -force "elm-stuff" $build_path}
+proc clean {}		{global web_path build_path asset_folder ; file delete -force "elm-stuff" "$web_path/$asset_folder" $build_path}
 proc debug {}		{global production ; set production 0}
 proc release {}		{global production ; set production 1}
 
@@ -76,7 +76,8 @@ foreach srcfile [glob $api_path/*] {
 file rename -force "index.html" $html_path
 
 file copy -force tcl.json $app_vfs
-file copy -force $asset_folder $app_vfs
+file copy -force $asset_folder $app_vfs		;# for embedded wapp server
+file copy -force $asset_folder $web_path	;# for elm reactor server
 file copy -force $wrap_folder $app_vfs
 file copy -force $wrap_folder/$tcl_kit $build_path
 file copy -force $wrap_folder/$sdx_kit $build_path/sdx.kit

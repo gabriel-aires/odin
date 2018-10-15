@@ -180,7 +180,7 @@ menu model =
         logo =
             li [ class "pure-menu-heading" ]
                 [ a [ href model.nav.context ]
-                    [ img [ class "pure-img-responsive", src "../assets/logo_white.png" ] [] ]
+                    [ img [ class "pure-img-responsive", src "assets/logo_white.png" ] [] ]
                 ]
         entries =
             List.concat (menuCategories model)
