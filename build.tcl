@@ -143,7 +143,8 @@ foreach srcfile [glob $desktop_path/*] {
 	file copy -force $srcfile $app_vfs
 }
 
-file copy -force $asset_folder $app_vfs			;# for standalone binary
-file copy -force $asset_folder $desktop_path	;# for local TK development
+file copy -force $db_folder	  	$app_vfs
+file copy -force $asset_folder	$app_vfs			;# for standalone binary
+file copy -force $asset_folder	$desktop_path	;# for local TK development
 
 build "desktop application"

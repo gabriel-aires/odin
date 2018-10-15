@@ -3,10 +3,25 @@ package require Tk
 package require starkit
 package require sha256
 package require sqlite3
+package require json
 
 #initialize starpack
 starkit::startup
 set vfs_root [file dirname [file normalize [info script]]]
+
+#load settings
+set json_file [open $vfs_root/tcl.json r]
+set conf [::json::json2dict [read $json_file]]
+close $json_file
+
+namespace eval conf {
+
+  dict with conf {}
+  dict with conf targets desktop {}
+
+  set db_path [file join $vfs_root $db_folder]
+
+}
 
 #import namespaces
 namespace import ::tcl::mathop::*
@@ -95,7 +110,11 @@ set config_fields {
 }
 
 #open main database
-set db [Database new "[file dirname $::vfs_root]/db/odin.db"]
+set db_schema [open [file join $conf::db_path db.sql]]
+set db_sql    [read $db_schema]
+close $db_schema
+set db [Database new "odin.db"]
+$db query $db_sql
 
 #main widget layout
 set app       [Window new .]
