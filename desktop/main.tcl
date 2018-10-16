@@ -4,8 +4,6 @@ package require starkit
 package require sha256
 package require sqlite3
 package require json
-package require ttk::theme::awdark
-package require ttk::theme::awlight
 
 #initialize starpack
 starkit::startup
@@ -23,9 +21,14 @@ namespace eval conf {
 
   set asset_path  [file join $vfs_root $asset_folder]
   set schema_path [file join $vfs_root $db_folder]
+  set mod_path    [file join $vfs_root $mod_folder]
   set db_path     [file join [pwd] "odin.db"]
 
 }
+
+lappend ::auto_path $conf::mod_path/awthemes2.2
+package require ttk::theme::awdark
+package require ttk::theme::awlight
 
 #import namespaces
 namespace import ::tcl::mathop::*
@@ -115,7 +118,7 @@ set config_fields {
 }
 
 #setup themes
-set theme     [Theme new "$conf::logo_black.png" "$conf::logo_white.png"]
+set theme     [Theme new "$conf::asset_path/logo_black.png" "$conf::asset_path/logo_white.png"]
 
 #open main database
 set db_schema [open [file join $conf::schema_path db.sql]]
@@ -138,9 +141,9 @@ set conf_popup  	[Window new "[$main id].conf_popup"]
 set form	    		[AgentConfig new "[$conf_popup id].agentconfig" "Agent Settings" $config_fields $rules ]
 
 #banners
-set banner1       [$theme create_banner $left]
-set banner2       [$theme create_banner $right]
-$theme choose_theme "Dark"
+set banner1       [$theme create_banner [$left id]]
+set banner2       [$theme create_banner [$right id]]
+$theme theme_choose "Light"
 
 #display
 $app title "Odin Administrator Interface"

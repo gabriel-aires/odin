@@ -54,11 +54,11 @@ oo::class create Form {
 		switch -glob $type {
 			text:* {
 				::ttk::label $label -text $name
-				::ttk::entry $entry	-textvariable [my repo_key $key] -background white -foreground black	-width $width
+				::ttk::entry $entry	-textvariable [my repo_key $key] -width $width
 			}
 			password:* {
 				::ttk::label $label -text $name
-				::ttk::entry $entry	-textvariable [my repo_key $key] -show "*" -background white -foreground black -width $width
+				::ttk::entry $entry	-textvariable [my repo_key $key] -show "*" -width $width
 			}
 			bool:* {
 				::ttk::label $label -text $name
