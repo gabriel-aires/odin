@@ -19,7 +19,8 @@ namespace eval conf {
   dict with conf {}
   dict with conf targets desktop {}
 
-  set db_path [file join $vfs_root $db_folder]
+  set schema_path [file join $vfs_root $db_folder]
+  set db_path     [file join [pwd] "odin.db"]
 
 }
 
@@ -110,11 +111,11 @@ set config_fields {
 }
 
 #open main database
-set db_schema [open [file join $conf::db_path db.sql]]
+set db_schema [open [file join $conf::schema_path db.sql]]
 set db_sql    [read $db_schema]
 close $db_schema
-set db [Database new "odin.db"]
-$db query $db_sql
+set db [Database new $conf::db_path]
+catch {$db query $db_sql}
 
 #main widget layout
 set app       [Window new .]
