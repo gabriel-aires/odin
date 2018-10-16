@@ -4,6 +4,7 @@ package require starkit
 package require sha256
 package require sqlite3
 package require json
+package require awthemes
 
 #initialize starpack
 starkit::startup
@@ -19,6 +20,7 @@ namespace eval conf {
   dict with conf {}
   dict with conf targets desktop {}
 
+  set asset_path  [file join $vfs_root $asset_folder]
   set schema_path [file join $vfs_root $db_folder]
   set db_path     [file join [pwd] "odin.db"]
 
@@ -36,6 +38,7 @@ namespace import ::tcl::mathfunc::round
 namespace import ::tcl::mathfunc::srand
 
 #import classes
+source [file join $vfs_root theme.tcl]
 source [file join $vfs_root window.tcl]
 source [file join $vfs_root database.tcl]
 source [file join $vfs_root dbaccess.tcl]
@@ -110,6 +113,9 @@ set config_fields {
   choose		list:required,task_type
 }
 
+#setup themes
+set theme     [Theme new "$conf::logo_black.png" "$conf::logo_white.png"]
+
 #open main database
 set db_schema [open [file join $conf::schema_path db.sql]]
 set db_sql    [read $db_schema]
@@ -130,6 +136,12 @@ set signin	  		[Login new "[$auth_popup id].login" {} $login_fields $rules ]
 set conf_popup  	[Window new "[$main id].conf_popup"]
 set form	    		[AgentConfig new "[$conf_popup id].agentconfig" "Agent Settings" $config_fields $rules ]
 
+#banners
+set banner1       [$theme create_banner $left]
+set banner2       [$theme create_banner $right]
+$theme choose_theme "Dark"
+
+#display
 $app title "Odin Administrator Interface"
 $app assign_member [list $main $left $right]
 $app assign_resource $db
@@ -147,8 +159,7 @@ pack [$left id] -side left -fill y
 pack [$right id] -side right -fill y
 pack [$signin id]
 pack [$form id] -side left -expand 1
-
-tk_optionMenu [$right id].foo myVar Foo Bar Boo Spong Wibble
-pack [$right id].foo
+pack $banner1
+pack $banner2
 
 $auth_popup focus
