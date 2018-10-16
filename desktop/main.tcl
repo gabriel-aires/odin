@@ -4,7 +4,8 @@ package require starkit
 package require sha256
 package require sqlite3
 package require json
-package require awthemes
+package require ttk::theme::awdark
+package require ttk::theme::awlight
 
 #initialize starpack
 starkit::startup
