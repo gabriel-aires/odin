@@ -147,14 +147,14 @@ $theme theme_choose "Light"
 
 #step editor
 set scroll	[ttk::scrollbar [$right id].scroll -command "[$right id].editor yview"]
-set editor [ctext [$right id].editor -yscrollcommand "[$right id].scroll set"]
+set editor [ctext [$right id].editor -background white -font [list monospace 20] -yscrollcommand "[$right id].scroll set"]
 
 #highlighting rules
-ctext::addHighLightClassWithOnlyCharStart [$right id].editor		variables		red 		\$
-ctext::addHighLightClassWithOnlyCharStart [$right id].editor		strings			orange	\"
-ctext::addHighLightClassForSpecialChars		[$right id].editor 	  blocks 			purple 	{[]{}}
-ctext::addHighLightClassForRegexp 				[$right id].editor 	  commands 		brown 	{^[[:blank:]\[\{]*[a-zA-Z]+}
-ctext::addHighLightClassForRegexp 				[$right id].editor 	  comments 		gray		{^[[:blank:]]*#[^\n\r]*}
+ctext::addHighlightClassWithOnlyCharStart [$right id].editor		variables		red 		\$
+ctext::addHighlightClassWithOnlyCharStart [$right id].editor		strings			orange	\"
+ctext::addHighlightClassForSpecialChars		[$right id].editor 	  blocks 			purple 	{[]{}}
+ctext::addHighlightClassForRegexp 				[$right id].editor 	  commands 		brown 	{^[[:blank:]]*[[a-zA-Z]+}
+ctext::addHighlightClassForRegexp 				[$right id].editor 	  comments 		gray		{^[[:blank:]]*#[^\n\r]*}
 
 #display
 $app title "Odin Administrator Interface"
@@ -169,11 +169,11 @@ $conf_popup title "Configuration..."
 $conf_popup assign_member $form
 $conf_popup configure [list -padx 4p -pady 4p]
 
-pack [$main id] -fill both
+pack [$main id] -fill both -expand 1
 pack [$left id] -side left -fill y
-pack [$right id] -side right -fill y
+pack [$right id] -fill both -expand 1 -padx 4p -pady 4p
 pack [$signin id]
-pack [$form id] -side left -expand 1
+pack [$form id]
 pack $banner
 pack $scroll -side right -fill y 
 pack $editor -fill both -expand 1
