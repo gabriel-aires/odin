@@ -4,6 +4,7 @@ package require starkit
 package require sha256
 package require sqlite3
 package require json
+package require ctext
 
 #initialize starpack
 starkit::startup
@@ -141,9 +142,19 @@ set conf_popup  	[Window new "[$main id].conf_popup"]
 set form	    		[AgentConfig new "[$conf_popup id].agentconfig" "Agent Settings" $config_fields $rules ]
 
 #banners
-set banner1       [$theme create_banner [$left id]]
-set banner2       [$theme create_banner [$right id]]
+set banner       [$theme create_banner [$left id]]
 $theme theme_choose "Light"
+
+#step editor
+set scroll	[ttk::scrollbar [$right id].scroll -command "[$right id].editor yview"]
+set editor [ctext [$right id].editor -yscrollcommand "[$right id].scroll set"]
+
+#highlighting rules
+ctext::addHighLightClassWithOnlyCharStart [$right id].editor		variables		red 				\$
+ctext::addHighLightClassWithOnlyCharStart [$right id].editor		strings				orange		\"
+ctext::addHighLightClassForSpecialChars		 [$right id].editor 	blocks 				purple 	{[]{}}
+ctext::addHighLightClassForRegexp 								[$right id].editor 	commands 		brown 		{^[[:blank:]\[\{]*[a-zA-Z]+}
+ctext::addHighLightClassForRegexp 								[$right id].editor 	comments 		gray				{^[[:blank:]]*#[^\n\r]*}
 
 #display
 $app title "Odin Administrator Interface"
@@ -163,7 +174,8 @@ pack [$left id] -side left -fill y
 pack [$right id] -side right -fill y
 pack [$signin id]
 pack [$form id] -side left -expand 1
-pack $banner1
-pack $banner2
+pack $banner
+pack $scroll -side right -fill y 
+pack $editor -fill both -expand 1
 
 $auth_popup focus
