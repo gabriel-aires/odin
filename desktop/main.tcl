@@ -4,7 +4,6 @@ package require starkit
 package require sha256
 package require sqlite3
 package require json
-package require ctext
 
 #initialize starpack
 starkit::startup
@@ -27,9 +26,10 @@ namespace eval conf {
 
 }
 
-lappend ::auto_path $conf::mod_path/awthemes2.2
+lappend ::auto_path $conf::mod_path/awthemes2.2 $conf::mod_path/ctext3.3
 package require ttk::theme::awdark
 package require ttk::theme::awlight
+package require ctext
 
 #import namespaces
 namespace import ::tcl::mathop::*
@@ -150,11 +150,11 @@ set scroll	[ttk::scrollbar [$right id].scroll -command "[$right id].editor yview
 set editor [ctext [$right id].editor -yscrollcommand "[$right id].scroll set"]
 
 #highlighting rules
-ctext::addHighLightClassWithOnlyCharStart [$right id].editor		variables		red 				\$
-ctext::addHighLightClassWithOnlyCharStart [$right id].editor		strings				orange		\"
-ctext::addHighLightClassForSpecialChars		 [$right id].editor 	blocks 				purple 	{[]{}}
-ctext::addHighLightClassForRegexp 								[$right id].editor 	commands 		brown 		{^[[:blank:]\[\{]*[a-zA-Z]+}
-ctext::addHighLightClassForRegexp 								[$right id].editor 	comments 		gray				{^[[:blank:]]*#[^\n\r]*}
+ctext::addHighLightClassWithOnlyCharStart [$right id].editor		variables		red 		\$
+ctext::addHighLightClassWithOnlyCharStart [$right id].editor		strings			orange	\"
+ctext::addHighLightClassForSpecialChars		[$right id].editor 	  blocks 			purple 	{[]{}}
+ctext::addHighLightClassForRegexp 				[$right id].editor 	  commands 		brown 	{^[[:blank:]\[\{]*[a-zA-Z]+}
+ctext::addHighLightClassForRegexp 				[$right id].editor 	  comments 		gray		{^[[:blank:]]*#[^\n\r]*}
 
 #display
 $app title "Odin Administrator Interface"
