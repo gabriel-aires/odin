@@ -147,18 +147,8 @@ set banner        [$theme create_banner [$left id]]
 $theme theme_choose "Light"
 
 #editor
-set commands {after append array binary break case catch clock close concat continue eof error eval \
-  expr fblocked fcopy fileevent flush for foreach format gets global if incr info interp join lappend \
-  lindex linsert list llength lrange lreplace lsearch lsort namespace package pid proc puts read regexp \
-  regsub rename return scan seek set split string subst switch tell time trace unset update uplevel upvar \
-  variable vwait while cd encoding exec exit fconfigure file glob load open pwd socket source}
-
 set editor [Editor new "[$right id].editor" {Step Editor} ]
-$editor highlight_on blocks    chars {[]{}}         firebrick
-$editor highlight_on strings   regex {"[^\"]*"}     khaki
-$editor highlight_on comments  regex {#[^\n\r]*}    gray
-$editor highlight_on commands  words $commands      DeepPink
-$editor highlight_on variables start \$             DeepSkyBlue
+$editor colorscheme_choose "Monokai"
 
 #display
 $app title "Odin Administrator Interface"
