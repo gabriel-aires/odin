@@ -48,6 +48,7 @@ source [file join $vfs_root window.tcl]
 source [file join $vfs_root database.tcl]
 source [file join $vfs_root dbaccess.tcl]
 source [file join $vfs_root container.tcl]
+source [file join $vfs_root editor.tcl]
 source [file join $vfs_root repository.tcl]
 source [file join $vfs_root validation.tcl]
 source [file join $vfs_root form.tcl]
@@ -142,19 +143,22 @@ set conf_popup  	[Window new "[$main id].conf_popup"]
 set form	    		[AgentConfig new "[$conf_popup id].agentconfig" "Agent Settings" $config_fields $rules ]
 
 #banners
-set banner       [$theme create_banner [$left id]]
-$theme theme_choose "Light"
+set banner        [$theme create_banner [$left id]]
+$theme theme_choose "Dark"
 
-#step editor
-set scroll	[ttk::scrollbar [$right id].scroll -command "[$right id].editor yview"]
-set editor [ctext [$right id].editor -background white -font [list monospace 20] -yscrollcommand "[$right id].scroll set"]
+#editor
+set commands {after append array binary break case catch clock close concat continue eof error eval \
+  expr fblocked fcopy fileevent flush for foreach format gets global if incr info interp join lappend \
+  lindex linsert list llength lrange lreplace lsearch lsort namespace package pid proc puts read regexp \
+  regsub rename return scan seek set split string subst switch tell time trace unset update uplevel upvar \
+  variable vwait while cd encoding exec exit fconfigure file glob load open pwd socket source}
 
-#highlighting rules
-ctext::addHighlightClassWithOnlyCharStart [$right id].editor		variables		red 		\$
-ctext::addHighlightClassWithOnlyCharStart [$right id].editor		strings			orange	\"
-ctext::addHighlightClassForSpecialChars		[$right id].editor 	  blocks 			purple 	{[]{}}
-ctext::addHighlightClassForRegexp 				[$right id].editor 	  commands 		brown 	{^[[:blank:]]*[[a-zA-Z]+}
-ctext::addHighlightClassForRegexp 				[$right id].editor 	  comments 		gray		{^[[:blank:]]*#[^\n\r]*}
+set editor [Editor new "[$right id].editor" {Step Editor} ]
+$editor highlight_on blocks    chars {[]{}}         firebrick
+$editor highlight_on strings   regex {"[^\"]*"}     khaki
+$editor highlight_on comments  regex {#[^\n\r]*}    gray
+$editor highlight_on commands  words $commands      DeepPink
+$editor highlight_on variables start \$             DeepSkyBlue
 
 #display
 $app title "Odin Administrator Interface"
@@ -174,8 +178,7 @@ pack [$left id] -side left -fill y
 pack [$right id] -fill both -expand 1 -padx 4p -pady 4p
 pack [$signin id]
 pack [$form id]
+pack [$editor id]
 pack $banner
-pack $scroll -side right -fill y 
-pack $editor -fill both -expand 1
 
 $auth_popup focus
