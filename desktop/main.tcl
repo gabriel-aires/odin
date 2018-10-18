@@ -144,7 +144,7 @@ set form	    		[AgentConfig new "[$conf_popup id].agentconfig" "Agent Settings" 
 
 #banners
 set banner        [$theme create_banner [$left id]]
-$theme theme_choose "Dark"
+$theme theme_choose "Light"
 
 #editor
 set commands {after append array binary break case catch clock close concat continue eof error eval \
@@ -178,7 +178,7 @@ pack [$left id] -side left -fill y
 pack [$right id] -fill both -expand 1 -padx 4p -pady 4p
 pack [$signin id]
 pack [$form id]
-pack [$editor id]
+pack [$editor id] -fill both -expand 1
 pack $banner
 
 $auth_popup focus
