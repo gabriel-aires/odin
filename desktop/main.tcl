@@ -144,11 +144,11 @@ set form	    		[AgentConfig new "[$conf_popup id].agentconfig" "Agent Settings" 
 
 #banners
 set banner        [$theme create_banner [$left id]]
-$theme theme_choose "Light"
+$theme theme_choose "Default"
 
 #editor
 set editor [Editor new "[$right id].editor" {Step Editor} ]
-$editor colorscheme_choose "Monokai"
+$editor colorscheme_choose "Standard"
 
 #display
 $app title "Odin Administrator Interface"
