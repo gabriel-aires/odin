@@ -55,36 +55,42 @@ source [file join $vfs_root toolbar.tcl]
 source [file join $vfs_root validation.tcl]
 source [file join $vfs_root form.tcl]
 
+#specialized classes
 oo::class create Login {
-  superclass Form
-  mixin DbAccess Event
-    	
-  method auth_error? {} {
-    my variable Db
+	superclass Form
+	mixin DbAccess Event
+  
+	method auth_error? {} {
+		my variable Db
     
-    set name   [my repo_val login]
-    set hash   [sha2::sha256 [my repo_val password]]
-    set search [$Db query {
-          SELECT u.name
-          FROM user u
-          INNER JOIN user_type t	on u.type_id = t.rowid
-          WHERE u.active = 1 AND t.name = 'admin' AND u.name = :name AND u.pass = :hash
-    }]
-
-    return [ne $name $search]
-  }
-    	
-  method submit {} {        		
-    if {[my input_error?]} {
-      my update_help "ERROR"
-    } elseif {[my auth_error?]} {
-      my update_help "ERROR" "Invalid User/Password"
-    } else {
-      my update_help "SUCCESS" "Authentication Successful"
-    }
-        		
-    my debug_input
-  }	
+		set name   [my repo_val login]
+		set hash   [sha2::sha256 [my repo_val password]]
+		set search [$Db query {
+		     SELECT u.name
+		     FROM user u
+		     INNER JOIN user_type t	on u.type_id = t.rowid
+		     WHERE u.active = 1 AND t.name = 'admin' AND u.name = :name AND u.pass = :hash
+		}]
+		
+		return [ne $name $search]
+	}
+	    
+	method submit {} {        		
+		if {[my input_error?]} {
+			my update_help "ERROR"
+		} elseif {[my auth_error?]} {
+			my update_help "ERROR" "Invalid User/Password"
+		} else {
+			my update_help "SUCCESS" "Authentication Successful"
+			after 1000 "[self] destroy ; ::main"
+		}
+		            	
+		my debug_input
+	}
+	
+	destructor {
+		destroy [my id]
+	}
 }
 
 oo::class create AgentConfig {
@@ -123,6 +129,7 @@ set config_fields {
 
 #setup themes
 set theme     [Theme new "$conf::asset_path/logo_black.png" "$conf::asset_path/logo_white.png"]
+$theme theme_choose "Default"
 
 #open main database
 set db_schema [open [file join $conf::schema_path db.sql]]
@@ -131,50 +138,56 @@ close $db_schema
 set db [Database new $conf::db_path]
 catch {$db query $db_sql}
 
-#main widget layout
-set app       [Window new .]
-set main	  	[Section new ".main"]
-set left		 	[Section new "[$main id].left"]
-set right			[Section new "[$main id].right"]
+#main window
+proc main {} {
+	
+	#main widget layout
+	set main	  	[Section new ".main"]
+	set left		 	[Section new "[$main id].left"]
+	set right			[Section new "[$main id].right"]
+	
+	#popups
+	set conf_popup  	[Window new "[$main id].conf_popup"]
+	set form	    		[AgentConfig new "[$conf_popup id].agentconfig" "Agent Settings" $::config_fields $::rules ]
+	
+	#banners
+	set banner        [$::theme create_banner [$left id]]
+	
+	#editor
+	set editor [Editor new "[$right id].editor" {Step Editor} ]
+	set editor_tools [Toolbar new [$right id].tools {}]
+	
+	#display	
+	$::app title "Odin Administrator Interface"
+	$::app assign_member [list $main $left $right]
+	
+	$conf_popup title "Configuration..."
+	$conf_popup assign_member $form
+	$conf_popup configure [list -padx 4p -pady 4p]
+	
+	$editor_tools assign $editor
+	$editor_tools add_selector theme "Theme: " colorscheme_choose {Standard Solarized Monokai}
+	$editor_tools display_toolbar
+	
+	pack [$main id] -fill both -expand 1
+	pack [$left id] -side left -fill y
+	pack [$right id] -fill both -expand 1 -padx 4p -pady 4p
 
-#popups
-set auth_popup  	[Window new "[$main id].auth_popup"]
-set signin	  		[Login new "[$auth_popup id].login" {} $login_fields $rules ]
+	pack [$form id]
+	pack [$editor_tools id] -side top -fill x
+	pack [$editor id] -fill both -expand 1
+	pack $banner
+}
+
+#login form
+set app       [Window new .]
+set signin	  		[Login new .login {} $login_fields $rules ]
+
+$app title "Odin login"
+$app assign_member [list $signin]
+$app assign_resource $db
+$signin use_db $db
 $signin bind_method [$signin input_id "password"] <Key-Return> "submit"
 
-set conf_popup  	[Window new "[$main id].conf_popup"]
-set form	    		[AgentConfig new "[$conf_popup id].agentconfig" "Agent Settings" $config_fields $rules ]
-
-#banners
-set banner        [$theme create_banner [$left id]]
-$theme theme_choose "Default"
-
-#editor
-set editor [Editor new "[$right id].editor" {Step Editor} ]
-
-set editor_tools [Toolbar new [$right id].tools {}]
-$editor_tools assign $editor
-$editor_tools add_selector theme "Theme: " colorscheme_choose {Standard Solarized Monokai}
-$editor_tools display_toolbar
-
-#display
-$app title "Odin Administrator Interface"
-$app assign_member [list $main $left $right]
-$app assign_resource $db
-
-$auth_popup title "Login"
-$auth_popup assign_member $signin
-$signin use_db $db
-
-$conf_popup title "Configuration..."
-$conf_popup assign_member $form
-$conf_popup configure [list -padx 4p -pady 4p]
-
-pack [$main id] -fill both -expand 1
-pack [$left id] -side left -fill y
-pack [$right id] -fill both -expand 1 -padx 4p -pady 4p
 pack [$signin id]
-pack [$form id]
-pack [$editor_tools id] -side top -fill x
-pack [$editor id] -fill both -expand 1
-pack $banner
+$app focus
