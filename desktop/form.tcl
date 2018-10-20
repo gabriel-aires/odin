@@ -13,36 +13,35 @@ oo::class create Form {
 		my setup_container $path $label
 		my setup_repository
 		my setup_validation $rules
-		set parent [my id]
 
 		foreach {key type} $fields {
-			my setup_input $parent $key $type
-			my display_input $parent $key	
+			my setup_input $key $type
+			my display_input $key	
 			set ruleset [lindex [split $type :] 1]
-			set child [my input_id $parent $key]
+			set child [my input_id $key]
 			dict set Entries $child name $key
 			dict set Entries $child ruleset $ruleset
 		}
 		
-		my setup_submit $parent
-		my display_submit $parent
-		my setup_help $parent
-		my display_help $parent
+		my setup_submit
+		my display_submit
+		my setup_help
+		my display_help
 		
 	}
 	
-	method input_label {parent key} {
-		return "$parent.label_$key"
+	method input_label {key} {
+		return "[my id].label_$key"
 	}
 	
-	method input_id {parent key} {
-		return "$parent.input_$key"
+	method input_id {key} {
+		return "[my id].input_$key"
 	}
 	
-	method setup_input {parent key type} {
+	method setup_input {key type} {
 		
-		set label			[my input_label $parent $key]
-		set entry			[my input_id $parent $key]
+		set label			[my input_label $key]
+		set entry			[my input_id $key]
 		set ruleset			[split [lindex [split $type :] 1] ,]
 		set width			30
 		set name			$key
@@ -77,21 +76,21 @@ oo::class create Form {
 		}
 	}
 	
-	method display_input {parent key} {
-		set label [my input_label $parent $key]
-		set entry [my input_id $parent $key]
+	method display_input {key} {
+		set label [my input_label $key]
+		set entry [my input_id $key]
 		grid $label $entry -padx 2p -pady 2p -sticky w
 	}
 	
-	method setup_help {parent} {
+	method setup_help {} {
 		set HelpMsg "Enter required information (*)"
-		::ttk::label "$parent.help" -text $HelpMsg -justify center
-		my config_help $parent {-foreground #000000}
+		::ttk::label "[my id].help" -text $HelpMsg -justify center
+		my config_help {-foreground #000000}
 		
 	}
 	
-	method config_help {parent options} {
-		$parent.help configure {*}$options
+	method config_help {options} {
+		[my id].help configure {*}$options
 	}
 	
 	method update_help {level {msg ""}} {
@@ -101,29 +100,29 @@ oo::class create Form {
 		
 		switch $level {
 			INFO {
-				my config_help [my id] [list -text $HelpMsg -foreground #000000]
+				my config_help [list -text $HelpMsg -foreground #000000]
 			}
 			ERROR {
-				my config_help [my id] [list -text $HelpMsg -foreground #c3063c]
+				my config_help [list -text $HelpMsg -foreground #c3063c]
 			}
 			SUCCESS {
-				my config_help [my id] [list -text $HelpMsg -foreground #2bdb64]		
+				my config_help [list -text $HelpMsg -foreground #2bdb64]		
 			}
 		}
 	}
 	
-	method display_help {parent} {
-		set window "$parent.help"
+	method display_help {} {
+		set window "[my id].help"
 		grid $window -columnspan 2
 			
 	}
 	
-	method setup_submit {parent} {
-		::ttk::button "$parent.submit" -text "OK" -command "[self] submit"
+	method setup_submit {} {
+		::ttk::button "[my id].submit" -text "OK" -command "[self] submit"
 	}
 
-	method display_submit {parent} {
-		set button "$parent.submit"
+	method display_submit {} {
+		set button "[my id].submit"
 		grid $button -columnspan 2 -pady 4p
 	}
 

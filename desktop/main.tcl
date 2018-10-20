@@ -57,7 +57,7 @@ source [file join $vfs_root form.tcl]
 
 oo::class create Login {
   superclass Form
-  mixin DbAccess
+  mixin DbAccess Event
     	
   method auth_error? {} {
     my variable Db
@@ -140,6 +140,7 @@ set right			[Section new "[$main id].right"]
 #popups
 set auth_popup  	[Window new "[$main id].auth_popup"]
 set signin	  		[Login new "[$auth_popup id].login" {} $login_fields $rules ]
+$signin bind_method [$signin input_id "password"] <Key-Return> "submit"
 
 set conf_popup  	[Window new "[$main id].conf_popup"]
 set form	    		[AgentConfig new "[$conf_popup id].agentconfig" "Agent Settings" $config_fields $rules ]
