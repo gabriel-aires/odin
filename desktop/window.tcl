@@ -1,4 +1,5 @@
 oo::class create Window {
+	mixin Event
 	variable Path Members Resources
 
 	constructor {path} {
@@ -11,7 +12,7 @@ oo::class create Window {
 			toplevel [my id]
 		}
 		
-		bind [my id] <Destroy> "if \{\"%W\" eq \"[my id]\"\} \{[self] destroy\}"
+		my bind_method [my id] <Destroy> "destroy"
 	}
 	
 	method id {} {

@@ -1,6 +1,6 @@
 oo::class create Toolbar {
 	superclass Container
-	mixin Repository
+	mixin Repository Event
 	variable Widget Controls Elements
 	
 	constructor {parent label} {
@@ -28,7 +28,7 @@ oo::class create Toolbar {
 		my add_control $name
 		lappend Elements [::ttk::label	[my id].label_$name -text $label]
 		lappend Elements [::ttk::combobox [my id].input_$name -textvariable [my repo_key $name] -state readonly -values $values]
-		bind [my id].input_$name <<ComboboxSelected>> "if {{%W} eq {[my id].input_$name}} {[self] send_command $method $name}"
+		my bind_method "[my id].input_$name" <<ComboboxSelected>> "send_command $method $name"
 	}
 	
 	method send_command {method name} {

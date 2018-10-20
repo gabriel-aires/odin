@@ -43,6 +43,7 @@ namespace import ::tcl::mathfunc::round
 namespace import ::tcl::mathfunc::srand
 
 #import classes
+source [file join $vfs_root event.tcl]
 source [file join $vfs_root theme.tcl]
 source [file join $vfs_root window.tcl]
 source [file join $vfs_root database.tcl]
