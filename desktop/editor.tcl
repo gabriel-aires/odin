@@ -6,15 +6,20 @@ oo::class create Editor {
 		my setup_container $parent $label
 		my setup_scrollbar
 		my setup_text
-		set HighlightClasses	{}
-		set ColorSchemes		{}
-		set EditorScheme		{}
+		my init_editor
 		set TclCommands			{after append array binary break case catch clock close concat continue eof error eval \
 			expr fblocked fcopy fileevent flush for foreach format gets global if incr info interp join lappend \
 		  	lindex linsert list llength lrange lreplace lsearch lsort namespace package pid proc puts read regexp \
 		  	regsub rename return scan seek set split string subst switch tell time trace unset update uplevel upvar \
 		  	variable vwait while cd encoding exec exit fconfigure file glob load open pwd socket source \
 		}
+	}
+	
+	method init_editor {} {
+		set HighlightClasses	{}
+		set ColorSchemes		{}
+		set EditorScheme		{}
+		::ctext::clearHighlightClasses [my id].text
 	}
 	
 	method colorscheme_choose {name} {
@@ -35,6 +40,7 @@ oo::class create Editor {
 	}
 	
 	method colorscheme_update {scheme} {
+		my init_editor
 		set EditorScheme [lindex $scheme 0]
 		dict set ColorSchemes $EditorScheme bg			[lindex $scheme 1]
 		dict set ColorSchemes $EditorScheme fg			[lindex $scheme 2]
@@ -46,6 +52,7 @@ oo::class create Editor {
 		dict set ColorSchemes $EditorScheme variables	[lindex $scheme 8]
 		my highlight_classes
 		my paint_editor
+		my highlight_between 1.0 end
 	}
 	
 	method paint_editor {} {
@@ -56,6 +63,10 @@ oo::class create Editor {
 			-linemapbg [dict get $ColorSchemes $EditorScheme bg] \
 			-linemapfg [dict get $ColorSchemes $EditorScheme fg] \
 		]
+	}
+	
+	method highlight_between {start end} {
+		uplevel 1 [list [my id].text highlight $start $end]		
 	}
 	
 	method highlight_classes {} {

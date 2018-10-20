@@ -50,6 +50,7 @@ source [file join $vfs_root dbaccess.tcl]
 source [file join $vfs_root container.tcl]
 source [file join $vfs_root editor.tcl]
 source [file join $vfs_root repository.tcl]
+source [file join $vfs_root toolbar.tcl]
 source [file join $vfs_root validation.tcl]
 source [file join $vfs_root form.tcl]
 
@@ -148,7 +149,11 @@ $theme theme_choose "Default"
 
 #editor
 set editor [Editor new "[$right id].editor" {Step Editor} ]
-$editor colorscheme_choose "Standard"
+
+set editor_tools [Toolbar new [$right id].tools {}]
+$editor_tools assign $editor
+$editor_tools add_selector theme "Theme: " colorscheme_choose {Standard Solarized Monokai}
+$editor_tools display_toolbar
 
 #display
 $app title "Odin Administrator Interface"
@@ -168,5 +173,6 @@ pack [$left id] -side left -fill y
 pack [$right id] -fill both -expand 1 -padx 4p -pady 4p
 pack [$signin id]
 pack [$form id]
+pack [$editor_tools id] -side top -fill x
 pack [$editor id] -fill both -expand 1
 pack $banner
