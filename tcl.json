@@ -24,7 +24,7 @@
     },
     "desktop": {
       "exe_name":     "odin-admin",
-      "src_pkgs":     [ "awthemes2.2", "ctext3.3" ],
+      "src_pkgs":     [ "awthemes2.2", "ctext3.3", "menubar0.5" ],
       "dll_pkgs":     []
     },    
     "agent": {
