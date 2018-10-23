@@ -169,10 +169,30 @@ proc main {} {
   set left        [Section new "[$main id].left"]
   set right       [Section new "[$main id].right"]
   
-  #popups
+  #agent config
   set conf_popup  [Window new "[$main id].conf_popup"]
   set form        [AgentConfig new "[$conf_popup id].agentconfig" "Agent Settings" $::config_fields $::rules ]
-  
+
+  #about
+  set help_popup  [Window new "[$main id].help_popup"]
+  set about_logo  [Section new "[$help_popup id].logo"]
+  set about_text  [Section new "[$help_popup id].text"]  
+  set logo        [$::theme create_banner [$about_logo id]]
+  set information [::ttk::label "[$about_text id].msg" -text {
+    ODIN - Open Deployment Information Network
+
+    Description:
+
+    Distributed system for software deployment automation and developer aiding
+    facilities (log visualization, custom runtime metrics, etc). It's based off   
+    another project of mine called "deploy-utils", originally written in pure
+    shell script as a proof of concept.
+    
+    Author:
+
+    Gabriel Aires Guedes - airesgabriel@gmail.com
+  }]
+ 
   #banners
   set banner      [$::theme create_banner [$left id]]
   
@@ -213,6 +233,10 @@ proc main {} {
   $conf_popup title "Configuration..."
   $conf_popup assign_member $form
   $conf_popup configure [list -padx 4p -pady 4p]
+ 
+  $help_popup title "About"
+  $help_popup assign_member [list $about_logo $about_text]
+  $help_popup configure [list -padx 4p -pady 4p]
   
   $editor_tools assign $editor
   $editor_tools add_selector theme "Theme: " colorscheme_choose {Standard Solarized Monokai}
@@ -223,6 +247,12 @@ proc main {} {
   pack [$right id] -fill both -expand 1 -padx 4p -pady 4p
   
   pack [$form id]
+  
+  pack [$about_logo id] -side top -fill x
+  pack [$about_text id] -fill both -expand 1
+  pack $logo
+  pack $information
+  
   pack [$editor_tools id] -side top -fill x
   pack [$editor id] -fill both -expand 1
   pack $banner
