@@ -15,10 +15,10 @@ set conf [::json::json2dict [read $json_file]]
 close $json_file
 
 namespace eval conf {
-
+  
   dict with conf {}
   dict with conf targets desktop {}
-
+  
   set asset_path  [file join $vfs_root $asset_folder]
   set schema_path [file join $vfs_root $db_folder]
   set mod_path    [file join $vfs_root $mod_folder]
@@ -58,50 +58,50 @@ source [file join $vfs_root form.tcl]
 
 #specialized classes
 oo::class create Login {
-	superclass Form
-	mixin DbAccess Event
+  superclass Form
+  mixin DbAccess Event
   
-	method auth_error? {} {
-		my variable Db
+  method auth_error? {} {
+    my variable Db
     
-		set name   [my repo_val login]
-		set hash   [sha2::sha256 [my repo_val password]]
-		set search [$Db query {
-		     SELECT u.name
-		     FROM user u
-		     INNER JOIN user_type t	on u.type_id = t.rowid
-		     WHERE u.active = 1 AND t.name = 'admin' AND u.name = :name AND u.pass = :hash
-		}]
-		
-		return [ne $name $search]
-	}
-	    
-	method submit {} {        		
-		if {[my input_error?]} {
-			my update_help "ERROR"
-		} elseif {[my auth_error?]} {
-			my update_help "ERROR" "Invalid User/Password"
-		} else {
-			my update_help "SUCCESS" "Authentication Successful"
-			after 1000 "[self] destroy; ::main"
-		}
-		            	
-		my debug_input
-	}
-	
-	destructor {
-		destroy [my id]
-	}
+    set name   [my repo_val login]
+    set hash   [sha2::sha256 [my repo_val password]]
+    set search [$Db query {
+         SELECT u.name
+         FROM user u
+         INNER JOIN user_type t	on u.type_id = t.rowid
+         WHERE u.active = 1 AND t.name = 'admin' AND u.name = :name AND u.pass = :hash
+    }]
+    
+    return [ne $name $search]
+  }
+      
+  method submit {} {        		
+    if {[my input_error?]} {
+      my update_help "ERROR"
+    } elseif {[my auth_error?]} {
+      my update_help "ERROR" "Invalid User/Password"
+    } else {
+      my update_help "SUCCESS" "Authentication Successful"
+      after 1000 "[self] destroy; ::main"
+    }
+                  
+    my debug_input
+  }
+  
+  destructor {
+    destroy [my id]
+  }
 }
 
 oo::class create AgentConfig {
   superclass Form	
-    	
+      
   method submit {} {
     if [my input_error?] {
       my update_help "ERROR"
     }
-
+  
     my debug_input
   }
 }
@@ -146,7 +146,7 @@ catch {$db query $db_sql}
 
 #main window
 proc main {} {
-	
+  
   #menubar
   set menubar   [menubar new]
   
@@ -164,25 +164,25 @@ proc main {} {
     }
   }
   
-	#main widget layout
-	set main	  	[Section new ".main"]
-	set left		 	[Section new "[$main id].left"]
-	set right			[Section new "[$main id].right"]
-	
-	#popups
-	set conf_popup  	[Window new "[$main id].conf_popup"]
-	set form	    		[AgentConfig new "[$conf_popup id].agentconfig" "Agent Settings" $::config_fields $::rules ]
-	
-	#banners
-	set banner        [$::theme create_banner [$left id]]
-	
-	#editor
-	set editor [Editor new "[$right id].editor" {Step Editor} ]
-	set editor_tools [Toolbar new [$right id].tools {}]
-	
-	#display	
-	$::app title "Odin Administrator Interface"
-	$::app assign_member [list $main $left $right]
+  #main widget layout
+  set main        [Section new ".main"]
+  set left        [Section new "[$main id].left"]
+  set right       [Section new "[$main id].right"]
+  
+  #popups
+  set conf_popup  [Window new "[$main id].conf_popup"]
+  set form        [AgentConfig new "[$conf_popup id].agentconfig" "Agent Settings" $::config_fields $::rules ]
+  
+  #banners
+  set banner      [$::theme create_banner [$left id]]
+  
+  #editor
+  set editor [Editor new "[$right id].editor" {Step Editor} ]
+  set editor_tools [Toolbar new [$right id].tools {}]
+  
+  #display	
+  $::app title "Odin Administrator Interface"
+  $::app assign_member [list $main $left $right]
   $::app assign_resource $menubar
   
   $menubar define {
@@ -209,28 +209,28 @@ proc main {} {
       quit                {0 Ctrl+Q Control-Key-q}
     }
   }
-	
-	$conf_popup title "Configuration..."
-	$conf_popup assign_member $form
-	$conf_popup configure [list -padx 4p -pady 4p]
-	
-	$editor_tools assign $editor
-	$editor_tools add_selector theme "Theme: " colorscheme_choose {Standard Solarized Monokai}
-	$editor_tools display_toolbar
-	
-	pack [$main id] -fill both -expand 1
-	pack [$left id] -side left -fill y
-	pack [$right id] -fill both -expand 1 -padx 4p -pady 4p
-
-	pack [$form id]
-	pack [$editor_tools id] -side top -fill x
-	pack [$editor id] -fill both -expand 1
-	pack $banner
+  
+  $conf_popup title "Configuration..."
+  $conf_popup assign_member $form
+  $conf_popup configure [list -padx 4p -pady 4p]
+  
+  $editor_tools assign $editor
+  $editor_tools add_selector theme "Theme: " colorscheme_choose {Standard Solarized Monokai}
+  $editor_tools display_toolbar
+  
+  pack [$main id] -fill both -expand 1
+  pack [$left id] -side left -fill y
+  pack [$right id] -fill both -expand 1 -padx 4p -pady 4p
+  
+  pack [$form id]
+  pack [$editor_tools id] -side top -fill x
+  pack [$editor id] -fill both -expand 1
+  pack $banner
 }
 
 #login form
-set app       [Window new .]
-set signin	  		[Login new .login {} $login_fields $rules ]
+set app     [Window new .]
+set signin  [Login new .login {} $login_fields $rules ]
 
 $app title "Odin login"
 $app assign_member [list $signin]
