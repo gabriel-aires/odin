@@ -60,7 +60,7 @@ oo::class create Window {
 		foreach member $Members {
 			if [info exists $member] {
 				set path [$member id]
-				catch $member destroy
+				$member destroy
 				catch {destroy $path}
 				puts "window $path destroyed"
 			}
