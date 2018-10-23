@@ -26,10 +26,11 @@ namespace eval conf {
 
 }
 
-lappend ::auto_path $conf::mod_path/awthemes2.2 $conf::mod_path/ctext3.3
+lappend ::auto_path $conf::mod_path/awthemes2.2 $conf::mod_path/ctext3.3 $conf::mod_path/menubar0.5
 package require ttk::theme::awdark
 package require ttk::theme::awlight
 package require ctext
+package require menubar
 
 #import namespaces
 namespace import ::tcl::mathop::*
@@ -141,6 +142,23 @@ catch {$db query $db_sql}
 #main window
 proc main {} {
 	
+  #menubar
+  set menubar   [menubar new]
+  
+  namespace eval menubar {
+    proc quit {_} {
+      $::app destroy
+    }
+    
+    proc theme {_ _ name} {
+      $::theme theme_choose $name
+    }
+    
+    proc about {_} {
+      #TODO
+    }
+  }
+  
 	#main widget layout
 	set main	  	[Section new ".main"]
 	set left		 	[Section new "[$main id].left"]
@@ -160,6 +178,32 @@ proc main {} {
 	#display	
 	$::app title "Odin Administrator Interface"
 	$::app assign_member [list $main $left $right]
+  $::app assign_resource $menubar
+  
+  $menubar define {
+    File M:file {
+      Quit        C       quit
+    }
+    View M:view {
+      Theme       S       separator1
+      Default     R       theme_selector+
+      Light       R       theme_selector
+      Dark        R       theme_selector
+    }
+    Help M:help {
+      About       C       about
+    }
+  }
+  
+  $menubar install [$::app id] {
+    $menubar menu.configure -command {
+      quit                ::menubar::quit
+      theme_selector      ::menubar::theme
+      about               ::menubar::about
+    } -bind {
+      quit                {0 Ctrl+Q Control-Key-q}
+    }
+  }
 	
 	$conf_popup title "Configuration..."
 	$conf_popup assign_member $form

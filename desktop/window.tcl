@@ -58,10 +58,12 @@ oo::class create Window {
 		}
 		
 		foreach member $Members {
-			set path [$member id]
-			$member destroy
-			catch {destroy $path}
-			puts "window $path destroyed"
+			if [info exists $member] {
+				set path [$member id]
+				catch $member destroy
+				catch {destroy $path}
+				puts "window $path destroyed"
+			}
 		}			
 		
 		my unfocus
