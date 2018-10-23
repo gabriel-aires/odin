@@ -83,7 +83,7 @@ oo::class create Login {
 			my update_help "ERROR" "Invalid User/Password"
 		} else {
 			my update_help "SUCCESS" "Authentication Successful"
-			after 1000 "[self] destroy ; ::main"
+			after 1000 "[self] destroy; ::main"
 		}
 		            	
 		my debug_input
@@ -130,7 +130,12 @@ set config_fields {
 
 #setup themes
 set theme     [Theme new "$conf::asset_path/logo_black.png" "$conf::asset_path/logo_white.png"]
-$theme theme_choose "Default"
+
+if {$tcl_platform(platform) eq "unix"} {
+  $theme theme_choose "Light"
+} else {
+  $theme theme_choose "Default"
+}
 
 #open main database
 set db_schema [open [file join $conf::schema_path db.sql]]
@@ -147,7 +152,7 @@ proc main {} {
   
   namespace eval menubar {
     proc quit {_} {
-      $::app destroy
+      destroy [$::app id]
     }
     
     proc theme {_ _ name} {
@@ -186,7 +191,7 @@ proc main {} {
     }
     View M:view {
       Theme       S       separator1
-      Default     R       theme_selector+
+      Default     R       theme_selector
       Light       R       theme_selector
       Dark        R       theme_selector
     }
