@@ -22,16 +22,24 @@ oo::class create Window {
 	method title {title} {
 		wm title [my id] $title
 	}
-	
+
 	method focus {} {
 		grab [my id]
 		focus [my id]
-		wm attributes [my id] -topmost 1
+		raise [my id]
+		wm deiconify [my id]
 	}
 	
 	method unfocus {} {
 		grab release [my id]
-		wm attributes [my id] -topmost 0
+	}
+	
+	method center {} {
+		raise [my id]
+		update
+		set x [/ [- [winfo screenwidth .] [winfo width [my id]]] 2]
+		set y [/ [- [winfo screenheight .] [winfo height [my id]]] 2]
+		wm geometry [my id] +$x+$y
 	}
 	
 	method close {} {
