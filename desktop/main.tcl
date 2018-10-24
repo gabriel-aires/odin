@@ -100,8 +100,7 @@ proc main {} {
     $Window title "Configuration..."
     $Window assign_member $form
     $Window configure [list -padx 4p -pady 4p]
-    $Window center
-
+    $Window focus
   }
   
   $::popup define [$::main id].help_popup {
@@ -276,5 +275,4 @@ $signin use_db $db
 $signin bind_method [$signin input_id "password"] <Key-Return> "submit"
 
 pack [$signin id]
-$app focus
 $app center

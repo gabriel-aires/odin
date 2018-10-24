@@ -9,10 +9,10 @@ oo::class create Window {
 		set Resources {}
 		
 		if {$Path ne "."} {
-			toplevel [my id]
+			toplevel $Path
 		}
 		
-		my bind_method [my id] <Destroy> "destroy"
+		my bind_method $Path <Destroy> "destroy"
 	}
 	
 	method id {} {
@@ -20,34 +20,37 @@ oo::class create Window {
 	}
 
 	method title {title} {
-		wm title [my id] $title
+		wm title $Path $title
 	}
 
 	method focus {} {
-		grab [my id]
-		focus [my id]
-		raise [my id]
-		wm deiconify [my id]
+		my center
+		grab $Path
+		focus $Path
+		raise $Path
+		wm deiconify $Path
+		wm attributes $Path -topmost 1
 	}
 	
 	method unfocus {} {
-		grab release [my id]
+		grab release $Path
+		wm attributes $Path -topmost 0
 	}
 	
 	method center {} {
-		raise [my id]
+		raise $Path
 		update
-		set x [/ [- [winfo screenwidth .] [winfo width [my id]]] 2]
-		set y [/ [- [winfo screenheight .] [winfo height [my id]]] 2]
-		wm geometry [my id] +$x+$y
+		set x [/ [- [winfo screenwidth .] [winfo width $Path]] 2]
+		set y [/ [- [winfo screenheight .] [winfo height $Path]] 2]
+		wm geometry $Path +$x+$y
 	}
 	
 	method close {} {
-		destroy [my id]
+		destroy $Path
 	}
 
 	method configure {options} {
-		[my id] configure {*}$options
+		$Path configure {*}$options
 	}
 	
 	method assign_member {objects} {
@@ -77,7 +80,7 @@ oo::class create Window {
 		my unfocus
 		my close
 		
-		puts "window [my id] destroyed"
+		puts "window $Path destroyed"
 
 	}
 }

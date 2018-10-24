@@ -44,7 +44,7 @@ oo::class create PopUp {
     
     method Reveal {path} {
         set obj [dict get $PopUps $path object]
-        $obj center
+        $obj focus
     }
        
     method display {path} {
