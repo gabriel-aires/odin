@@ -24,10 +24,27 @@ oo::class create Toolbar {
 		}
 	}
 	
+	method parse_values {values} {
+		set parsed_values {}
+		set default_value {}
+		foreach value $values {
+			if [regexp {\+$} $value] {
+				set default_value [string trimright $value +]
+				lappend parsed_values $default_value
+			} else {
+				lappend parsed_values $value
+			}
+		}
+		return [list $parsed_values $default_value]
+	}
+	
 	method add_selector {name label method values} {
 		my add_control $name
+		lassign [my parse_values $values] options default_option
 		lappend Elements [::ttk::label	[my id].label_$name -text $label]
-		lappend Elements [::ttk::combobox [my id].input_$name -textvariable [my repo_key $name] -state readonly -values $values]
+		lappend Elements [::ttk::combobox [my id].input_$name -textvariable [my repo_key $name] -state readonly -values $options]
+		[my id].input_$name set $default_option
+		my send_command $method $name
 		my bind_method "[my id].input_$name" <<ComboboxSelected>> "send_command $method $name"
 	}
 	

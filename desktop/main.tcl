@@ -191,7 +191,7 @@ proc main {} {
   set editor_tools [Toolbar new [$::right id].tools {}]
 
   $editor_tools assign $editor
-  $editor_tools add_selector theme "Theme: " colorscheme_choose {Standard Solarized Monokai}
+  $editor_tools add_selector theme "Theme: " colorscheme_choose {Standard+ Solarized Monokai}
   $editor_tools display_toolbar
   
   pack [$::main id] -fill both -expand 1
