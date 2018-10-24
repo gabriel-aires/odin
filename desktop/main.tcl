@@ -58,13 +58,6 @@ source [file join $vfs_root validation.tcl]
 source [file join $vfs_root form.tcl]
 
 #initialize configuration
-set rules {
-  required		    .
-  optional		    {}
-  task_type		    ^deploy|build$
-  password_size		........
-}
-
 set login_fields {
   login       text:required
   password		password:required,password_size
@@ -259,6 +252,7 @@ set db_sql    [read $db_schema]
 close $db_schema
 set db [Database new $conf::db_path]
 catch {$db query $db_sql}
+set rules [$db query {SELECT * FROM rule}]
 
 #setup widgets
 set app     [Window new .]

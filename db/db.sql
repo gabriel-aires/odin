@@ -50,6 +50,10 @@ CREATE TABLE IF NOT EXISTS `rule` (
 	`name`	TEXT NOT NULL UNIQUE,
 	`pattern`	TEXT
 );
+INSERT INTO `rule` VALUES ('required','.');
+INSERT INTO `rule` VALUES ('optional','');
+INSERT INTO `rule` VALUES ('task_type','^deploy|build$');
+INSERT INTO `rule` VALUES ('password_size','........');
 CREATE TABLE IF NOT EXISTS `role_type` (
 	`name`	TEXT NOT NULL,
 	`description`	TEXT NOT NULL
