@@ -23,6 +23,10 @@ oo::class create Container {
 	method id {} {
 		return $Path
 	}
+	
+	method configure {options} {
+		$Path configure {*}$options
+	}
 }
 
 oo::class create Section {

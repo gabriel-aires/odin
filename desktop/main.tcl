@@ -73,7 +73,7 @@ set config_fields {
 }
 
 #main window
-proc main {} {
+proc main {user} {
   
   #popups
   $::popup define [$::main id].conf_popup {
@@ -174,7 +174,12 @@ proc main {} {
     } -bind {
       quit                {0 Ctrl+Q Control-Key-q}
     }
-  }  
+  }
+  
+  #statusbar
+  $::footer configure [list -relief groove -borderwidth 2p]
+  set user_info   [::ttk::label [$::footer id].user_info -text "Logged in as $user" -justify left]
+  set rev_info    [::ttk::label [$::footer id].rev_info -text "ODIN v1.0" -justify right]
   
   #banners
   set banner      [$::theme create_banner [$::left id]]
@@ -190,10 +195,13 @@ proc main {} {
   pack [$::main id] -fill both -expand 1
   pack [$::left id] -side left -fill y
   pack [$::right id] -fill both -expand 1 -padx 4p -pady 4p
+  pack [$::footer id] -side bottom -fill x
   pack [$editor_tools id] -side top -fill x
   pack [$editor id] -fill both -expand 1
   pack $banner
-      
+  pack $user_info -side left
+  pack $rev_info -side right
+  
   #display	
   $::app title "Odin Administrator Interface"
   $::app assign_resource $menubar
@@ -204,20 +212,21 @@ proc main {} {
 oo::class create Login {
   superclass Form
   mixin DbAccess Event
+  variable User
   
   method auth_error? {} {
     my variable Db
     
-    set name   [my repo_val login]
+    set User   [my repo_val login]
     set hash   [sha2::sha256 [my repo_val password]]
     set search [$Db query {
          SELECT u.name
          FROM user u
          INNER JOIN user_type t	on u.type_id = t.rowid
-         WHERE u.active = 1 AND t.name = 'admin' AND u.name = :name AND u.pass = :hash
+         WHERE u.active = 1 AND t.name = 'admin' AND u.name = :User AND u.pass = :hash
     }]
     
-    return [ne $name $search]
+    return [ne $User $search]
   }
       
   method submit {} {        		
@@ -227,7 +236,7 @@ oo::class create Login {
       my update_help "ERROR" "Invalid User/Password"
     } else {
       my update_help "SUCCESS" "Authentication Successful"
-      after 1000 "[self] destroy; ::main"
+      after 1000 "[self] destroy; ::main $User"
     }
                   
     my debug_input
@@ -261,9 +270,10 @@ set signin  [Login new .login {} $login_fields $rules ]
 set main    [Section new ".main"]
 set left    [Section new "[$main id].left"]
 set right   [Section new "[$main id].right"]
+set footer  [Section new ".footer"]
 
 $app title "Odin login"
-$app assign_member [list $signin $main $left $right]
+$app assign_member [list $signin $main $left $right $footer]
 $app assign_resource $db
 $signin use_db $db
 $signin bind_method [$signin input_id "password"] <Key-Return> "submit"
