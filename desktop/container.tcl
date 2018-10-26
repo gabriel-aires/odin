@@ -4,7 +4,7 @@ oo::class create Container {
 	method setup_container {path {label ""}} {
 		set Path $path
 		set Label $label
-		set default_options [list -padding 2p]
+		set default_options [list -padding 5p]
 		
 		switch -glob $Label {
 			/				{::ttk::notebook $Path {*}$default_options ; ::ttk::notebook::enableTraversal $Path}

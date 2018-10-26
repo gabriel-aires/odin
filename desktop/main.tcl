@@ -128,8 +128,8 @@ oo::objdefine $signin_form {
   }
 }
 
-$signin_container configure [list -padding 2p]
-$signin_form configure [list -labelanchor n -padding 8p]
+$signin_container configure [list -padding 3p]
+$signin_form configure [list -labelanchor n -padding 9p]
 $signin_form use_db $db
 $signin_form bind_method [$signin_form input_id "password"] <Key-Return> "submit"
 pack [$signin_container id]
@@ -165,7 +165,6 @@ proc main {user} {
 	    
 	    $Window title "Configuration..."
 	    $Window assign_member $form
-	    $Window configure [list -padx 4p -pady 4p]
 	    $Window focus
 	  }
 	  
@@ -195,7 +194,6 @@ proc main {user} {
 	    
 	    $Window title "About"
 	    $Window assign_member [list $about_logo $about_text]
-	    $Window configure [list -padx 4p -pady 4p]
 	    $Window center
 	  }
   }
