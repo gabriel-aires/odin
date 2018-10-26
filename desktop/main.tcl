@@ -286,5 +286,5 @@ proc main {user} {
 	#final app setup  
   $::app assign_member [list $sidebar $tabview $status]
   $::app assign_resource [list $popups::popup $menubar::menubar]
-  $::app center
+  $::app maximize
 }

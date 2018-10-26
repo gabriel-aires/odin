@@ -48,6 +48,14 @@ oo::class create Window {
 	method close {} {
 		destroy $Path
 	}
+	
+	method maximize {} {
+		if {$::tcl_platform(platform) eq "unix"} {
+			wm attributes $Path -zoomed 1
+		} else {
+			wm state $Path zoomed
+		}
+	}
 
 	method configure {options} {
 		$Path configure {*}$options
