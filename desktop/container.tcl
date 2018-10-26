@@ -4,11 +4,13 @@ oo::class create Container {
 	method setup_container {path {label ""}} {
 		set Path $path
 		set Label $label
+		set default_options [list -padding 2p]
 		
-		if {$Label eq ""} {		
-			::ttk::frame $Path -padding 2p
-		} else {
-			::ttk::labelframe $Path -text $Label -padding 2p
+		switch -glob $Label {
+			/				{::ttk::notebook $Path {*}$default_options ; ::ttk::notebook::enableTraversal $Path}
+			/*				{::ttk::frame $Path {*}$default_options ;	[my parent] add $Path -text [string trimleft $Label /]}
+			[A-z]*		{::ttk::labelframe $Path -text $Label {*}$default_options}
+			default	{::ttk::frame $Path {*}$default_options}
 		}
 	}
 
@@ -36,4 +38,3 @@ oo::class create Section {
 		my setup_container {*}$args
 	}
 }
-

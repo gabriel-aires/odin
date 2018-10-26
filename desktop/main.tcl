@@ -57,8 +57,10 @@ source [file join $vfs_root toolbar.tcl]
 source [file join $vfs_root validation.tcl]
 source [file join $vfs_root form.tcl]
 
-#initialize configuration
-set login_fields {
+#initialize application
+set app [Window new .]
+
+set auth_fields {
   login       text:required
   password		password:required,password_size
 }
@@ -72,145 +74,28 @@ set config_fields {
   choose		list:required,task_type
 }
 
-#main window
-proc main {user} {
-  
-  #popups
-  $::popup define [$::main id].conf_popup {
-    set form [Form new ${Path}.agentconfig "Agent Settings" $::config_fields $::rules]
+#open main database
+set db_schema [open [file join $conf::schema_path db.sql]]
+set db_sql    [read $db_schema]
+close $db_schema
+set db [Database new $conf::db_path]
+catch {$db query $db_sql}
+set rules [$db query {SELECT * FROM rule}]
 
-    oo::objdefine $form {        
-      method submit {} {
-        if [my input_error?] {
-          my update_help "ERROR"
-        }
-        my debug_input
-      }
-    }
+#setup themes
+set theme [Theme new "$conf::asset_path/logo_black.png" "$conf::asset_path/logo_white.png"]
 
-    pack [$form id]
-    
-    $Window title "Configuration..."
-    $Window assign_member $form
-    $Window configure [list -padx 4p -pady 4p]
-    $Window focus
-  }
-  
-  $::popup define [$::main id].help_popup {
-    set about_logo  [Section new ${Path}.logo]
-    set about_text  [Section new ${Path}.text]
-    set logo        [$::theme create_banner [$about_logo id]]
-    set information [::ttk::label "[$about_text id].msg" -text {
-      ODIN - Open Deployment Information Network
-  
-      Description:
-  
-      Distributed system for software deployment automation and developer aiding
-      facilities (log visualization, custom runtime metrics, etc). It's based off   
-      another project of mine called "deploy-utils", originally written in pure
-      shell script as a proof of concept.
-      
-      Author:
-  
-      Gabriel Aires Guedes - airesgabriel@gmail.com
-    }]
-
-    pack [$about_logo id] -side top -fill x
-    pack [$about_text id] -fill both -expand 1
-    pack $logo
-    pack $information
-    
-    $Window title "About"
-    $Window assign_member [list $about_logo $about_text]
-    $Window configure [list -padx 4p -pady 4p]
-    $Window center
-  }
-
-  #menubar
-  set menubar   [menubar new]
-  
-  namespace eval menubar {
-    proc quit {_} {
-      destroy [$::app id]
-    }
-    
-    proc theme {_ _ name} {
-      $::theme theme_choose $name
-    }
-    
-    proc about {_} {
-      $::popup display [$::main id].help_popup
-    }
-    
-    proc agent {_} {
-      $::popup display [$::main id].conf_popup
-    }
-  }
-  
-  $menubar define {
-    File M:file {
-      Quit        C       quit
-    }
-    View M:view {
-      Theme       S       separator1
-      Default     R       theme_selector
-      Light       R       theme_selector
-      Dark        R       theme_selector
-    }
-    Settings M:settings {
-      Agent       C       agent
-    }    
-    Help M:help {
-      About       C       about
-    }
-  }
-  
-  $menubar install [$::app id] {
-    $menubar menu.configure -command {
-      quit                ::menubar::quit
-      theme_selector      ::menubar::theme
-      agent               ::menubar::agent
-      about               ::menubar::about
-    } -bind {
-      quit                {0 Ctrl+Q Control-Key-q}
-    }
-  }
-  
-  #statusbar
-  $::footer configure [list -relief groove -borderwidth 2p]
-  set user_info   [::ttk::label [$::footer id].user_info -text "Logged in as $user" -justify left]
-  set rev_info    [::ttk::label [$::footer id].rev_info -text "ODIN v1.0" -justify right]
-  
-  #banners
-  set banner      [$::theme create_banner [$::left id]]
-  
-  #editor
-  set editor [Editor new "[$::right id].editor" {Step Editor} ]
-  set editor_tools [Toolbar new [$::right id].tools {}]
-
-  $editor_tools assign $editor
-  $editor_tools add_selector theme "Theme: " colorscheme_choose {Standard+ Solarized Monokai}
-  $editor_tools display_toolbar
-  
-  pack [$::main id] -fill both -expand 1
-  pack [$::left id] -side left -fill y
-  pack [$::right id] -fill both -expand 1 -padx 4p -pady 4p
-  pack [$::footer id] -side bottom -fill x
-  pack [$editor_tools id] -side top -fill x
-  pack [$editor id] -fill both -expand 1
-  pack $banner
-  pack $user_info -side left
-  pack $rev_info -side right
-  
-  #display	
-  $::app title "Odin Administrator Interface"
-  $::app assign_resource $menubar
-  $::app center
+if {$tcl_platform(platform) eq "unix"} {
+  $theme theme_choose "Light"
+} else {
+  $theme theme_choose "Default"
 }
 
-#login form
-oo::class create Login {
-  superclass Form
+#signin form
+set signin_container	[Section new .auth]
+set signin_form						[Form new [$signin_container id].form Authentication $auth_fields $rules ]
+
+oo::objdefine $signin_form {
   mixin DbAccess Event
   variable User
   
@@ -236,47 +121,170 @@ oo::class create Login {
       my update_help "ERROR" "Invalid User/Password"
     } else {
       my update_help "SUCCESS" "Authentication Successful"
-      after 1000 "[self] destroy; ::main $User"
+      after 1000 "destroy [my id] ; destroy [my parent] ; [self] destroy ; ::main $User"
     }
-                  
+                      
     my debug_input
   }
-  
-  destructor {
-    destroy [my id]
-  }
 }
 
-#setup themes
-set theme     [Theme new "$conf::asset_path/logo_black.png" "$conf::asset_path/logo_white.png"]
-if {$tcl_platform(platform) eq "unix"} {
-  $theme theme_choose "Light"
-} else {
-  $theme theme_choose "Default"
-}
+$signin_container configure [list -padding 2p]
+$signin_form configure [list -labelanchor n -padding 8p]
+$signin_form use_db $db
+$signin_form bind_method [$signin_form input_id "password"] <Key-Return> "submit"
+pack [$signin_container id]
+pack [$signin_form id]
 
-#open main database
-set db_schema [open [file join $conf::schema_path db.sql]]
-set db_sql    [read $db_schema]
-close $db_schema
-set db [Database new $conf::db_path]
-catch {$db query $db_sql}
-set rules [$db query {SELECT * FROM rule}]
-
-#setup widgets
-set app     [Window new .]
-set popup   [PopUp new]  
-set signin  [Login new .login {} $login_fields $rules ]
-set main    [Section new ".main"]
-set left    [Section new "[$main id].left"]
-set right   [Section new "[$main id].right"]
-set footer  [Section new ".footer"]
-
-$app title "Odin login"
-$app assign_member [list $signin $main $left $right $footer]
+#initial app setup
+$app title "Odin Administrator Interface"
+$app assign_member [list $signin_container $signin_form]
 $app assign_resource $db
-$signin use_db $db
-$signin bind_method [$signin input_id "password"] <Key-Return> "submit"
-
-pack [$signin id]
 $app center
+
+#main
+proc main {user} {
+  
+  #popups
+  namespace eval popups {
+	  
+		variable popup [::PopUp new]
+		
+	  $popup define .conf_popup {
+	    set form [Form new ${Path}.agentconfig "Agent Settings" $::config_fields $::rules]
+	
+	    oo::objdefine $form {        
+	      method submit {} {
+	        if [my input_error?] {
+	          my update_help "ERROR"
+	        }
+	        my debug_input
+	      }
+	    }
+	
+	    pack [$form id]
+	    
+	    $Window title "Configuration..."
+	    $Window assign_member $form
+	    $Window configure [list -padx 4p -pady 4p]
+	    $Window focus
+	  }
+	  
+	  $popup define .help_popup {
+	    set about_logo  [Section new ${Path}.logo]
+	    set about_text  [Section new ${Path}.text]
+	    set logo        [$::theme create_banner [$about_logo id]]
+	    set information [::ttk::label "[$about_text id].msg" -text {
+	      ODIN - Open Deployment Information Network
+	  
+	      Description:
+	  
+	      Distributed system for software deployment automation and developer aiding
+	      facilities (log visualization, custom runtime metrics, etc). It's based off   
+	      another project of mine called "deploy-utils", originally written in pure
+	      shell script as a proof of concept.
+	      
+	      Author:
+	  
+	      Gabriel Aires Guedes - airesgabriel@gmail.com
+	    }]
+	
+	    pack [$about_logo id] -side top -fill x
+	    pack [$about_text id] -fill both -expand 1
+	    pack $logo
+	    pack $information
+	    
+	    $Window title "About"
+	    $Window assign_member [list $about_logo $about_text]
+	    $Window configure [list -padx 4p -pady 4p]
+	    $Window center
+	  }
+  }
+
+  #menubar
+  namespace eval menubar {
+
+	  variable menubar [::menubar new]
+	  
+    proc quit {_} {
+      destroy .
+    }
+    
+    proc theme {_ _ name} {
+      $::theme theme_choose $name
+    }
+    
+    proc about {_} {
+      $::popups::popup display .help_popup
+    }
+    
+    proc agent {_} {
+      $::popups::popup display .conf_popup
+    }
+  
+	  $menubar define {
+	    File M:file {
+	      Quit        C       quit
+	    }
+	    View M:view {
+	      Theme       S       separator1
+	      Default     R       theme_selector
+	      Light       R       theme_selector
+	      Dark        R       theme_selector
+	    }
+	    Settings M:settings {
+	      Agent       C       agent
+	    }    
+	    Help M:help {
+	      About       C       about
+	    }
+	  }
+	  
+	  $menubar install . {
+	    $menubar menu.configure -command {
+	      quit                ::menubar::quit
+	      theme_selector      ::menubar::theme
+	      agent               ::menubar::agent
+	      about               ::menubar::about
+	    } -bind {
+	      quit                {0 Ctrl+Q Control-Key-q}
+	    }
+	  }
+  }
+	
+	#layout
+	set left 			.sidebar
+	set right 		.tabview
+	set bottom		.status
+	set sidebar	[Section new $left]
+	set tabview	[Section new $right /]
+	set status 	[Section new $bottom]
+	$bottom configure -relief groove -borderwidth 2p
+  pack $bottom -side bottom -fill x
+	pack $left -side left -fill y
+  pack $right -fill both -expand 1
+
+  #sidebar
+  set banner [$::theme create_banner $left]
+  pack $banner
+  
+  #tabview /editor
+  set editor_tab			[Section new $right.editor /Editor]
+  set editor_input [Editor new $right.editor.input {}]
+  set editor_tools [Toolbar new $right.editor.tools {}]
+  $editor_tools assign $editor_input
+  $editor_tools add_selector theme "Theme: " colorscheme_choose {Standard+ Solarized Monokai}
+  $editor_tools display_toolbar
+  pack [$editor_tools id] -side top -fill x
+  pack [$editor_input id] -fill both -expand 1
+
+  #status 
+  set user_info   [::ttk::label $bottom.user_info -text "Logged in as $user" -justify left]
+  set rev_info    [::ttk::label $bottom.rev_info -text "ODIN v1.0" -justify right]
+  pack $user_info -side left
+  pack $rev_info -side right
+
+	#final app setup  
+  $::app assign_member [list $sidebar $tabview $status]
+  $::app assign_resource [list $popups::popup $menubar::menubar]
+  $::app center
+}
