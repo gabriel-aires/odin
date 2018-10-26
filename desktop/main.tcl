@@ -45,12 +45,14 @@ namespace import ::tcl::mathfunc::srand
 
 #import classes
 source [file join $vfs_root event.tcl]
+source [file join $vfs_root holder.tcl]
 source [file join $vfs_root theme.tcl]
 source [file join $vfs_root window.tcl]
 source [file join $vfs_root popup.tcl]
 source [file join $vfs_root database.tcl]
 source [file join $vfs_root dbaccess.tcl]
 source [file join $vfs_root container.tcl]
+source [file join $vfs_root component.tcl]
 source [file join $vfs_root editor.tcl]
 source [file join $vfs_root repository.tcl]
 source [file join $vfs_root toolbar.tcl]
@@ -173,12 +175,13 @@ proc main {user} {
 	    set about_text  [Section new ${Path}.text]
 	    set logo        [$::theme create_banner [$about_logo id]]
 	    set information [::ttk::label "[$about_text id].msg" -text {
+        
 	      ODIN - Open Deployment Information Network
 	  
 	      Description:
 	  
 	      Distributed system for software deployment automation and developer aiding
-	      facilities (log visualization, custom runtime metrics, etc). It's based off   
+	      facilities (log visualization, custom runtime metrics, etc). It's based off         
 	      another project of mine called "deploy-utils", originally written in pure
 	      shell script as a proof of concept.
 	      
@@ -248,41 +251,51 @@ proc main {user} {
 	    }
 	  }
   }
-	
-	#layout
-	set left 			.sidebar
-	set right 		.tabview
-	set bottom		.status
-	set sidebar	[Section new $left]
-	set tabview	[Section new $right /]
-	set status 	[Section new $bottom]
-	$bottom configure -relief groove -borderwidth 2p
-  pack $bottom -side bottom -fill x
-	pack $left -side left -fill y
-  pack $right -fill both -expand 1
-
-  #sidebar
-  set banner [$::theme create_banner $left]
-  pack $banner
   
-  #tabview /editor
-  set editor_tab			[Section new $right.editor /Editor]
-  set editor_input [Editor new $right.editor.input {}]
-  set editor_tools [Toolbar new $right.editor.tools {}]
-  $editor_tools assign $editor_input
-  $editor_tools add_selector theme "Theme: " colorscheme_choose {Standard+ Solarized Monokai}
-  $editor_tools display_toolbar
-  pack [$editor_tools id] -side top -fill x
-  pack [$editor_input id] -fill both -expand 1
+  #layout
+  namespace eval layout {
+    set left 			.sidebar
+    set right 		.tabview
+    set bottom		.status
+  }
 
+	set sidebar	[Section new $layout::left]
+	set status 	[Section new $layout::bottom]
+	$layout::bottom configure -relief groove -borderwidth 2p
+  pack $layout::bottom -side bottom -fill x
+	pack $layout::left -side left -fill y
+
+  #components
+  namespace eval components {
+    
+    variable component [::Component new $::layout::right]
+    pack $::layout::right -fill both -expand 1
+    
+    $component define editor "Step Definition" {
+      set editor_input [Editor new ${Path}.input {}]
+      set editor_tools [Toolbar new ${Path}.tools {}]
+      $editor_tools assign $editor_input
+      $editor_tools add_selector theme "Theme: " colorscheme_choose {Standard+ Solarized Monokai}
+      $editor_tools display_toolbar
+      pack [$editor_tools id] -side top -fill x
+      pack [$editor_input id] -fill both -expand 1
+    }
+  }
+  
+  $components::component display editor
+  
+  #sidebar
+  set banner [$::theme create_banner $layout::left]
+  pack $banner
+    
   #status 
-  set user_info   [::ttk::label $bottom.user_info -text "Logged in as $user" -justify left]
-  set rev_info    [::ttk::label $bottom.rev_info -text "ODIN v1.0" -justify right]
+  set user_info   [::ttk::label $layout::bottom.user_info -text "Logged in as $user" -justify left]
+  set rev_info    [::ttk::label $layout::bottom.rev_info -text "ODIN v1.0" -justify right]
   pack $user_info -side left
   pack $rev_info -side right
 
 	#final app setup  
-  $::app assign_member [list $sidebar $tabview $status]
-  $::app assign_resource [list $popups::popup $menubar::menubar]
+  $::app assign_member [list $sidebar $status]
+  $::app assign_resource [list $popups::popup $menubar::menubar $components::component]
   $::app maximize
 }

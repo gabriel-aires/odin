@@ -1,12 +1,10 @@
 oo::class create Window {
-	mixin Event
-	variable Path Members Resources
+	mixin Event Holder
+	variable Path 
 
 	constructor {path} {
-		
+		my setup_contents
 		set Path $path
-		set Members {}
-		set Resources {}
 		
 		if {$Path ne "."} {
 			toplevel $Path
@@ -60,35 +58,12 @@ oo::class create Window {
 	method configure {options} {
 		$Path configure {*}$options
 	}
-	
-	method assign_member {objects} {
-		lappend Members {*}$objects
-	}
-	
-	method assign_resource {objects} {
-		lappend Resources {*}$objects
-	}	
 		
 	destructor {
-		
-		foreach resource $Resources {
-			$resource destroy
-			puts "resource $resource released"
-		}
-		
-		foreach member $Members {
-			if [info exists $member] {
-				set path [$member id]
-				$member destroy
-				catch {destroy $path}
-				puts "window $path destroyed"
-			}
-		}			
-		
+		my release_resources
+		my destroy_members		
 		my unfocus
 		my close
-		
 		puts "window $Path destroyed"
-
 	}
 }
