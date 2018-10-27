@@ -297,7 +297,7 @@ proc main {user} {
   }
 
 	#final app setup  
-  $::app assign_member $status
+  $::app assign_member [$status id]
   $::app assign_resource [list $popups::popup $menubar::menubar $components::component $sidebar::sidebar]
   $::app maximize
 }

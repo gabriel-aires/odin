@@ -47,9 +47,11 @@ oo::class create Component {
         my assign_resource $resource
         my assign_member $Path
         uplevel 1 $body
+        set options [list -side bottom -anchor e -padx 5p -pady 5p]
+        pack [::ttk::button ${Path}.close_tab -text "Close" -command "[self] close $Path"] {*}$options
         set Path {}
     }
-    
+
     method Reveal {path} {
         $Parent select $path
     }
@@ -64,6 +66,18 @@ oo::class create Component {
             }
         } else {
             error "Component unknown: $path"
+        }
+    }
+    
+    method close {path} {
+        if [my active? $path] {
+            set child [dict get $Components $path object]
+            dict set Components $path object {}
+            my remove_member $path
+            my remove_resource $child
+            $child destroy
+            $Parent forget $path
+            destroy $path
         }
     }
     

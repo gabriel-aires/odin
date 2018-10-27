@@ -5,10 +5,24 @@ oo::class create Holder {
         set Members     {}
 		set Resources   {}
     }
+
+    method remove {value list} {
+        set newlist {}
+        foreach item $list {
+            if {$item ne $value} {
+                lappend newlist $item
+            }
+        }
+        return $newlist
+    }
     
 	method assign_member {objects} {
 		lappend Members {*}$objects
 	}
+
+    method remove_member {object} {
+        set Members [my remove $object $Members]
+    }
 
     method destroy_members {} {
 		foreach member $Members {
@@ -25,6 +39,10 @@ oo::class create Holder {
 		lappend Resources {*}$objects
 	}
 
+    method remove_resource {object} {
+        set Resources [my remove $object $Resources]
+    }
+    
     method release_resources {} {
 		foreach resource $Resources {
 			$resource destroy
