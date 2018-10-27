@@ -52,6 +52,7 @@ source [file join $vfs_root popup.tcl]
 source [file join $vfs_root database.tcl]
 source [file join $vfs_root dbaccess.tcl]
 source [file join $vfs_root container.tcl]
+source [file join $vfs_root sidebar.tcl]
 source [file join $vfs_root component.tcl]
 source [file join $vfs_root editor.tcl]
 source [file join $vfs_root repository.tcl]
@@ -125,7 +126,7 @@ oo::objdefine $signin_form {
       my update_help "SUCCESS" "Authentication Successful"
       after 1000 "destroy [my id] ; destroy [my parent] ; [self] destroy ; ::main $User"
     }
-                      
+    
     my debug_input
   }
 }
@@ -145,6 +146,13 @@ $app center
 
 #main
 proc main {user} {
+  
+  #layout
+  namespace eval layout {
+    set left 			.sidebar
+    set right 		.tabview
+    set bottom		.status
+  }
   
   #popups
   namespace eval popups {
@@ -251,25 +259,31 @@ proc main {user} {
 	    }
 	  }
   }
-  
-  #layout
-  namespace eval layout {
-    set left 			.sidebar
-    set right 		.tabview
-    set bottom		.status
-  }
 
-	set sidebar	[Section new $layout::left]
+  #status
 	set status 	[Section new $layout::bottom]
 	$layout::bottom configure -relief groove -borderwidth 2p
-  pack $layout::bottom -side bottom -fill x
-	pack $layout::left -side left -fill y
-
+  pack $layout::bottom -side bottom -fill x  
+  set user_info   [::ttk::label $layout::bottom.user_info -text "Logged in as $user" -justify left]
+  set rev_info    [::ttk::label $layout::bottom.rev_info -text "ODIN v1.0" -justify right]
+  pack $user_info -side left
+  pack $rev_info -side right
+  
+  #sidebar
+  namespace eval sidebar {
+    
+    variable sidebar	[Sidebar new $layout::left]
+    pack [$::theme create_banner $layout::left]
+    
+    $sidebar install {
+      "Step Editor"   "$::components::component display editor"
+    }
+  }
+  
   #components
   namespace eval components {
     
     variable component [::Component new $::layout::right]
-    pack $::layout::right -fill both -expand 1
     
     $component define editor "Step Definition" {
       set editor_input [Editor new ${Path}.input {}]
@@ -281,21 +295,9 @@ proc main {user} {
       pack [$editor_input id] -fill both -expand 1
     }
   }
-  
-  $components::component display editor
-  
-  #sidebar
-  set banner [$::theme create_banner $layout::left]
-  pack $banner
-    
-  #status 
-  set user_info   [::ttk::label $layout::bottom.user_info -text "Logged in as $user" -justify left]
-  set rev_info    [::ttk::label $layout::bottom.rev_info -text "ODIN v1.0" -justify right]
-  pack $user_info -side left
-  pack $rev_info -side right
 
 	#final app setup  
-  $::app assign_member [list $sidebar $status]
-  $::app assign_resource [list $popups::popup $menubar::menubar $components::component]
+  $::app assign_member $status
+  $::app assign_resource [list $popups::popup $menubar::menubar $components::component $sidebar::sidebar]
   $::app maximize
 }

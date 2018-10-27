@@ -8,6 +8,7 @@ oo::class create Component {
         set Path        {}
         set Parent      $parent
         set Container   [::Section new $parent /]
+        pack $Parent -fill both -expand 1
     }
 
     method define {basepath title body} {
