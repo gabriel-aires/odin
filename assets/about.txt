@@ -1,0 +1,12 @@
+ODIN - Open Deployment Information Network
+
+Description:
+
+Distributed system for software deployment automation and developer aiding
+facilities (log visualization, custom runtime metrics, etc). It's based off
+another project of mine called "deploy-utils", originally written in pure
+shell script as a proof of concept.
+
+Author:
+
+Gabriel Aires Guedes - airesgabriel@gmail.com

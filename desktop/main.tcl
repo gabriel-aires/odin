@@ -158,6 +158,9 @@ proc main {user} {
   namespace eval popups {
 	  
 		variable popup [::PopUp new]
+    variable about_file [open [file join $::conf::asset_path "about.txt"] r]
+    variable about_msg  [read $about_file]
+    close $about_file
 		
 	  $popup define .conf_popup {
 	    set form [Form new ${Path}.agentconfig "Agent Settings" $::config_fields $::rules]
@@ -182,21 +185,7 @@ proc main {user} {
 	    set about_logo  [Section new ${Path}.logo]
 	    set about_text  [Section new ${Path}.text]
 	    set logo        [$::theme create_banner [$about_logo id]]
-	    set information [::ttk::label "[$about_text id].msg" -text {
-        
-	      ODIN - Open Deployment Information Network
-	  
-	      Description:
-	  
-	      Distributed system for software deployment automation and developer aiding
-	      facilities (log visualization, custom runtime metrics, etc). It's based off         
-	      another project of mine called "deploy-utils", originally written in pure
-	      shell script as a proof of concept.
-	      
-	      Author:
-	  
-	      Gabriel Aires Guedes - airesgabriel@gmail.com
-	    }]
+	    set information [::ttk::label "[$about_text id].msg" -text $about_msg]
 	
 	    pack [$about_logo id] -side top -fill x
 	    pack [$about_text id] -fill both -expand 1
