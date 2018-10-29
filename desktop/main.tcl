@@ -185,7 +185,9 @@ proc main {user} {
 	    set about_logo  [Section new ${Path}.logo]
 	    set about_text  [Section new ${Path}.text]
 	    set logo        [$::theme create_banner [$about_logo id]]
-	    set information [::ttk::label "[$about_text id].msg" -text $about_msg]
+	    set information [text "[$about_text id].msg"]
+      $information insert 1.0 $popups::about_msg
+      $information configure -state disabled -wrap word -height 10p -width 60
 	
 	    pack [$about_logo id] -side top -fill x
 	    pack [$about_text id] -fill both -expand 1
