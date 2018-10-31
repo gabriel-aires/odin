@@ -1,11 +1,12 @@
 oo::class create Component {
     mixin Holder
-    variable Components Container Path Parent
+    variable Components Container Path Parent Frame
     
     constructor {parent} {
         my setup_contents
         set Components  {}
         set Path        {}
+        set Frame       {}
         set Parent      $parent
         set Container   [::Section new $parent /]
         pack $Parent -fill both -expand 1
@@ -42,10 +43,9 @@ oo::class create Component {
         set Path $path
         set title [dict get $Components $Path title]
         set body [dict get $Components $Path script]
-        set resource [::Section new $Path /$title]
-        dict set Components $Path object $resource
-        my assign_resource $resource
-        my assign_member $Path
+        set Frame [::Section new $Path /$title]
+        dict set Components $Path object $Frame
+        my assign_member $Frame
         uplevel 1 $body
         set options [list -side bottom -anchor e -padx 5p -pady 5p]
         pack [::ttk::button ${Path}.close_tab -text "Close" -command "[self] close $Path"] {*}$options

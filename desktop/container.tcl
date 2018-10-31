@@ -1,4 +1,5 @@
 oo::class create Container {
+	mixin Holder
 	variable Path Label
 
 	method setup_container {path {label ""}} {

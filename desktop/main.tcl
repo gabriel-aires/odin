@@ -284,6 +284,7 @@ proc main {user} {
       $editor_tools display_toolbar
       pack [$editor_tools id] -side top -fill x
       pack [$editor_input id] -fill both -expand 1
+      $Frame assign_member [list $editor_input $editor_tools]
     }
   }
 
