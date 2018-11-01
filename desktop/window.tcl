@@ -35,8 +35,9 @@ oo::class create Window {
 	}
 	
 	method center {} {
-		set x [/ [- [winfo screenwidth .] [winfo reqwidth $Path]] 2]
-		set y [/ [- [winfo screenheight .] [winfo reqheight $Path]] 2]
+		update
+		set x [/ [- [winfo screenwidth .] [winfo width $Path]] 2]
+		set y [/ [- [winfo screenheight .] [winfo height $Path]] 2]
 		wm geometry $Path +$x+$y
 	}
 	

@@ -161,9 +161,9 @@ proc main {} {
       $form bind_method [$form input_id "password"] <Key-Return> "submit"
       $form bind_method [$form id] <Destroy> "finish"    
       $form hire $Window
-      $Window title "Authentication"
-      $Window focus
       pack [$form id]
+      $Window title "Authentication"
+      $Window focus      
     }
     
     $popup define .conf_popup {
@@ -177,11 +177,10 @@ proc main {} {
           my debug_input
         }
       }
-  
+      pack [$form id]  
       $Window title "Configuration..."
       $Window hire $form
       $Window focus
-      pack [$form id]
     }
     
     $popup define .help_popup {
@@ -191,13 +190,13 @@ proc main {} {
       set information [text "[$about_text id].msg"]
       $information insert 1.0 $conf::about_msg
       $information configure -state disabled -wrap word -height 10p -width 60
-      $Window title "About"
-      $Window hire [list $about_logo $about_text]
-      $Window center
       pack [$about_logo id] -side top -fill x
       pack [$about_text id] -fill both -expand 1
       pack $logo
       pack $information
+      $Window title "About"
+      $Window hire [list $about_logo $about_text]
+      $Window center
     }
   }
   
