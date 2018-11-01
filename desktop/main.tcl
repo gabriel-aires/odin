@@ -113,7 +113,7 @@ proc main {} {
     variable popup [::PopUp new]
   
     $popup define .auth_popup {
-      set form [Form new ${Path}.form Authentication $::conf::auth_fields $::conf::rules]
+      set form [Form new ${Path}.form {} $::conf::auth_fields $::conf::rules]
       
       oo::objdefine $form {
         mixin DbAccess
@@ -156,12 +156,12 @@ proc main {} {
         }
       }
       
-      $form configure [list -labelanchor n -padding 9p]
+      $form configure [list -padding 9p]
       $form use_db $::conf::db
       $form bind_method [$form input_id "password"] <Key-Return> "submit"
       $form bind_method [$form id] <Destroy> "finish"    
       $form hire $Window
-      $Window title "Login"
+      $Window title "Authentication"
       $Window focus
       pack [$form id]
     }
