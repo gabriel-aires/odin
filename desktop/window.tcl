@@ -25,7 +25,6 @@ oo::class create Window {
 		my center
 		grab $Path
 		focus $Path
-		raise $Path
 		wm deiconify $Path
 		wm attributes $Path -topmost 1
 	}
@@ -36,10 +35,9 @@ oo::class create Window {
 	}
 	
 	method center {} {
-		raise $Path
-		update
-		set x [/ [- [winfo screenwidth .] [winfo width $Path]] 2]
-		set y [/ [- [winfo screenheight .] [winfo height $Path]] 2]
+		lassign [wm maxsize .] screen_width screen_height
+		set x [/ [- $screen_width [winfo reqwidth $Path]] 2]
+		set y [/ [- $screen_height [winfo reqheight $Path]] 2]
 		wm geometry $Path +$x+$y
 	}
 	
