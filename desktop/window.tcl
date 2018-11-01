@@ -35,9 +35,8 @@ oo::class create Window {
 	}
 	
 	method center {} {
-		lassign [wm maxsize .] screen_width screen_height
-		set x [/ [- $screen_width [winfo reqwidth $Path]] 2]
-		set y [/ [- $screen_height [winfo reqheight $Path]] 2]
+		set x [/ [- [winfo screenwidth .] [winfo reqwidth $Path]] 2]
+		set y [/ [- [winfo screenheight .] [winfo reqheight $Path]] 2]
 		wm geometry $Path +$x+$y
 	}
 	
