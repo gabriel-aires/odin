@@ -1,14 +1,14 @@
 oo::class create Component {
-    mixin Holder
-    variable Components Container Path Parent Frame
+    mixin Contract
+    variable Components Path Parent Frame
     
     constructor {parent} {
-        my setup_contents
+        my setup_contract
         set Components  {}
         set Path        {}
         set Frame       {}
         set Parent      $parent
-        set Container   [::Section new $parent /]
+        my hire [::Container new $Parent /]
         pack $Parent -fill both -expand 1
     }
 
@@ -34,7 +34,7 @@ oo::class create Component {
     method active? {path} {
         set obj [dict get $Components $path object]
         if {$obj ne {}} {
-            return [in $obj [info class instances "Section"]]
+            return [in $obj [info class instances "Container"]]
         }
         return 0
     }
@@ -43,13 +43,14 @@ oo::class create Component {
         set Path $path
         set title [dict get $Components $Path title]
         set body [dict get $Components $Path script]
-        set Frame [::Section new $Path /$title]
+        set Frame [::Container new $Path /$title]
         dict set Components $Path object $Frame
-        my assign_member $Frame
+        my hire $Frame
         uplevel 1 $body
         set options [list -side bottom -anchor e -padx 5p -pady 5p]
         pack [::ttk::button ${Path}.close_tab -text "Close" -command "[self] close $Path"] {*}$options
         set Path {}
+        set Frame {}
     }
 
     method Reveal {path} {
@@ -71,20 +72,13 @@ oo::class create Component {
     
     method close {path} {
         if [my active? $path] {
-            set child [dict get $Components $path object]
+            $Parent forget $path            
+            my dismiss [dict get $Components $path object]
             dict set Components $path object {}
-            my remove_member $path
-            my remove_resource $child
-            $child destroy
-            $Parent forget $path
-            destroy $path
         }
     }
     
-    destructor {    
-        my release_resources
-        my destroy_members
-        destroy $Parent
-        $Container destroy
+    destructor {
+        my terminate
     }
 }

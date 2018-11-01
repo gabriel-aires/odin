@@ -4,7 +4,7 @@ oo::class create Toolbar {
 	variable Widget Controls Elements
 	
 	constructor {parent label} {
-		my setup_container $parent $label
+		next $parent $label
 		my setup_repository
 		set Widget {}
 		set Controls {}

@@ -3,14 +3,13 @@ oo::class create Form {
 	mixin Repository Validation
 	variable Entries HelpMsg
 
-	constructor {args} {
+	constructor {args} {		
+		set path	[lindex $args 0]
+		set label	[lindex $args 1]
+		set fields	[lindex $args 2]
+		set rules	[lindex $args 3]
 		
-		set path 		[lindex $args 0]
-		set label		[lindex $args 1]
-		set fields [lindex $args 2]
-		set rules		[lindex $args 3]
-		
-		my setup_container $path $label
+		next $path $label
 		my setup_repository
 		my setup_validation $rules
 
@@ -26,8 +25,7 @@ oo::class create Form {
 		my setup_submit
 		my display_submit
 		my setup_help
-		my display_help
-		
+		my display_help	
 	}
 	
 	method input_label {key} {

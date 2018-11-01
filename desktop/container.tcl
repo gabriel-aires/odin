@@ -1,8 +1,9 @@
 oo::class create Container {
-	mixin Holder
+	mixin Event Contract
 	variable Path Label
 
-	method setup_container {path {label ""}} {
+	constructor {path {label ""}} {
+		my setup_contract
 		set Path $path
 		set Label $label
 		set default_options [list -padding 5p]
@@ -30,12 +31,10 @@ oo::class create Container {
 	method configure {options} {
 		$Path configure {*}$options
 	}
-}
-
-oo::class create Section {
-	superclass Container
 	
-	constructor {args} {
-		my setup_container {*}$args
-	}
+	destructor {
+		my terminate
+		destroy $Path
+		puts "window $Path destroyed, ref: [self]"
+	}	
 }

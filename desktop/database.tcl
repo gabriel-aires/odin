@@ -1,9 +1,10 @@
 oo::class create Database {
-  variable Db
+  variable Db File
   
   constructor {path} {
     set Db db
-    sqlite3 $Db $path
+    set File $path
+    sqlite3 $Db $File
   }
   
   method query {sql} {
@@ -13,5 +14,6 @@ oo::class create Database {
   
   destructor {
     $Db close
+    puts "database $File closed, ref: [self]"
   }
 }

@@ -1,10 +1,11 @@
 oo::class create Sidebar {
+    mixin Contract
     variable Index Container Parent
     
     constructor {parent} {
         set Index       0
         set Parent      $parent
-        set Container   [::Section new $parent]
+        my hire [::Container new $Parent]
         pack $Parent -side left -fill y
     }
 
@@ -19,7 +20,6 @@ oo::class create Sidebar {
     }
     
     destructor {
-        destroy $Parent
-        $Container destroy
+        my terminate
     }
 }

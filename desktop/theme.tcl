@@ -53,5 +53,6 @@ oo::class create Theme {
 		foreach banner $Banners {
 			destroy $banner
 		}
+		puts "theme object destroyed, ref: [self]"
 	}
 }

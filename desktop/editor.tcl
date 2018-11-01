@@ -3,7 +3,7 @@ oo::class create Editor {
 	variable TclCommands EditorScheme ColorSchemes HighlightClasses
 
 	constructor {parent label} {
-		my setup_container $parent $label
+		next $parent $label
 		my setup_scrollbar
 		my setup_text
 		my init_editor
