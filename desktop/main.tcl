@@ -155,15 +155,15 @@ proc main {} {
           }
         }
       }
-      
+
+      pack [$form id]      
       $form configure [list -padding 9p]
       $form use_db $::conf::db
       $form bind_method [$form input_id "password"] <Key-Return> "submit"
       $form bind_method [$form id] <Destroy> "finish"    
       $form hire $Window
-      pack [$form id]
       $Window title "Authentication"
-      $Window focus      
+      $Window focus
     }
     
     $popup define .conf_popup {
@@ -188,12 +188,12 @@ proc main {} {
       set about_text  [Container new ${Path}.text]
       set logo        [$::conf::theme create_banner [$about_logo id]]
       set information [text "[$about_text id].msg"]
-      $information insert 1.0 $conf::about_msg
-      $information configure -state disabled -wrap word -height 10p -width 60
       pack [$about_logo id] -side top -fill x
       pack [$about_text id] -fill both -expand 1
       pack $logo
       pack $information
+      $information insert 1.0 $conf::about_msg
+      $information configure -state disabled -wrap word -height 10p -width 60
       $Window title "About"
       $Window hire [list $about_logo $about_text]
       $Window center
@@ -314,7 +314,8 @@ proc main {} {
       $::conf::db \
       $::conf::theme]
     
-    $::popups::popup display .auth_popup
+    after 100 "$::popups::popup display .auth_popup"
+    
   }
 }
 
