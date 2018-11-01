@@ -55,6 +55,7 @@ proc main {} {
     set db_path     [file join [pwd] "odin.db"]
     set tk_user     {}
     set tk_hash     {}
+    set tk_changes  0
   
     set auth_fields {
       login       text:required
@@ -254,14 +255,22 @@ proc main {} {
   #status
   namespace eval statusbar {
     set statusbar 	[Container new $layout::bottom]
-    [$statusbar id] configure -relief groove -borderwidth 2p
+    [$statusbar id] configure -relief groove
     pack [$statusbar id] -side bottom -fill x
-    set user_label  [::ttk::label [$statusbar id].user_label -text "User: " -justify left]
-    set user_info   [::ttk::label [$statusbar id].user_info -textvariable ::conf::tk_user -justify left]
-    set rev_info    [::ttk::label [$statusbar id].rev_info -text "ODIN v1.0" -justify right]
-    pack $user_label -side left
-    pack $user_info -side left
-    pack $rev_info -side right
+    set user_frame  [Container new [$statusbar id].user]
+    set user_label  [::ttk::label [$user_frame id].label -text "User: " -justify left]
+    set user_info   [::ttk::label [$user_frame id].info -textvariable ::conf::tk_user -justify left]
+    set sync_frame  [Container new [$statusbar id].sync]
+    set sync_label  [::ttk::label [$sync_frame id].label -text "Changes: " -justify right]
+    set sync_info   [::ttk::label [$sync_frame id].info -textvariable ::conf::tk_changes -justify left]
+    set rev_frame   [Container new [$statusbar id].rev]
+    set rev_info    [::ttk::label [$rev_frame id].info -text "ODIN v1.0" -justify right]
+    $statusbar hire [list $user_frame $sync_frame $rev_frame]
+    grid [$user_frame id] x [$sync_frame id] x [$rev_frame id] -sticky ew
+    grid columnconfigure [$statusbar id] {1 3} -weight 1 -uniform a
+    grid $user_label $user_info -sticky e
+    grid $sync_label $sync_info -sticky ew
+    grid $rev_info -sticky w
   }
   
   #sidebar
