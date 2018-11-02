@@ -53,11 +53,6 @@ proc main {} {
     set schema_path [file join $::vfs_root $db_folder]
     set mod_path    [file join $::vfs_root $mod_folder]
     set db_path     [file join [pwd] "odin.db"]
-    set tk_user     {}
-    set tk_hash     {}
-    set tk_changes  0
-    set tk_script   {}
-    set tk_object   {}
   
     set new_script_fields {
       name        text:required
@@ -108,6 +103,15 @@ proc main {} {
     }  
   }
   
+  #runtime variables
+  namespace eval current {
+    set user     {}
+    set hash     {}
+    set changes  0
+    set script   {}
+    set object   {}    
+  }
+  
   #layout
   namespace eval layout {
     set left 			.sidebar
@@ -149,14 +153,14 @@ proc main {} {
             my update_help "ERROR" "Invalid User/Password"
           } else {
             my update_help "SUCCESS" "Authentication Successful"
-            after 1000 "set ::conf::tk_user $User ; set ::conf::tk_hash $Hash ; [self] finish"
+            after 1000 "set ::current::user $User ; set ::current::hash $Hash ; [self] finish"
           }
           
           my debug_input
         }
   
         method finish {} {
-          if {$::conf::tk_user eq {}} {
+          if {$::current::user eq {}} {
             $::app::app destroy
           } else {
             [self] destroy
@@ -221,8 +225,8 @@ proc main {} {
           } else {
             my update_help "SUCCESS" "Script $Name created"
             
-            set ::conf::tk_script $Name
-            $::conf::tk_object insert_template $Name $Args
+            set ::current::script $Name
+            $::current::object insert_template $Name $Args
             after 1000 "[self] destroy"
           }
           
@@ -329,10 +333,10 @@ proc main {} {
     pack [$statusbar id] -side bottom -fill x
     set user_frame  [Container new [$statusbar id].user]
     set user_label  [::ttk::label [$user_frame id].label -text "User: " -justify left]
-    set user_info   [::ttk::label [$user_frame id].info -textvariable ::conf::tk_user -justify left]
+    set user_info   [::ttk::label [$user_frame id].info -textvariable ::current::user -justify left]
     set sync_frame  [Container new [$statusbar id].sync]
     set sync_label  [::ttk::label [$sync_frame id].label -text "Changes: " -justify right]
-    set sync_info   [::ttk::label [$sync_frame id].info -textvariable ::conf::tk_changes -justify left]
+    set sync_info   [::ttk::label [$sync_frame id].info -textvariable ::current::changes -justify left]
     set rev_frame   [Container new [$statusbar id].rev]
     set rev_info    [::ttk::label [$rev_frame id].info -text "ODIN v1.0" -justify right]
     $statusbar hire [list $user_frame $sync_frame $rev_frame]
@@ -363,7 +367,7 @@ proc main {} {
       set editor_tools [Toolbar new ${Path}.tools {}]
       $editor_input config_text [list -state disabled]
       $editor_tools assign $editor_input
-      $editor_tools add_button new "New" "set ::conf::tk_object $editor_input; $::popups::popup display .new_script_popup"
+      $editor_tools add_button new "New" "set ::current::object $editor_input; $::popups::popup display .new_script_popup"
       $editor_tools add_spacer
       $editor_tools add_selector theme "Theme: " colorscheme_choose {Standard+ Solarized Monokai}
       $editor_tools display_toolbar
