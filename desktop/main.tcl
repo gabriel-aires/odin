@@ -363,24 +363,22 @@ proc main {} {
     variable component [::Component new $::layout::right]
     
     $component define editor "Script Editor" {
+      variable ns [namespace current] input [Editor new ${Path}.input {}] tools [Toolbar new ${Path}.tools {}]
       
-      proc new_script {editor_obj popup_manager popup_path} {
-        set ::current::object $editor_obj
-        $popup_manager display $popup_path
+      proc new_script {} {
+        set ::current::object $::components::editor::input
+        $::popups::popup display .new_script_popup
       }
       
-      set ns [namespace current]
-      set editor_input [Editor new ${Path}.input {}]
-      set editor_tools [Toolbar new ${Path}.tools {}]
-      $editor_input config_text [list -state disabled]
-      $editor_tools assign $editor_input
-      $editor_tools add_button new "New" [list ${ns}::new_script $editor_input $::popups::popup .new_script_popup]
-      $editor_tools add_spacer
-      $editor_tools add_selector theme "Theme: " colorscheme_choose {Standard+ Solarized Monokai}
-      $editor_tools display_toolbar
-      pack [$editor_tools id] -side top -fill x
-      pack [$editor_input id] -fill both -expand 1
-      $Frame hire [list $editor_input $editor_tools]
+      $input config_text [list -state disabled]
+      $tools assign $input
+      $tools add_button new "New" ${ns}::new_script
+      $tools add_spacer
+      $tools add_selector theme "Theme: " colorscheme_choose {Standard+ Solarized Monokai}
+      $tools display_toolbar
+      pack [$tools id] -side top -fill x
+      pack [$input id] -fill both -expand 1
+      $Frame hire [list $input $tools]
     }
   }
   
