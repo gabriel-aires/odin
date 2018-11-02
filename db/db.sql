@@ -32,23 +32,23 @@ CREATE TABLE IF NOT EXISTS `step` (
 	`name`	TEXT NOT NULL UNIQUE,
 	`type`	TEXT NOT NULL,
 	`script_id`	INTEGER NOT NULL UNIQUE,
-	`requirements`	TEXT,
-	`artifacts`	TEXT,
-	`arguments`	TEXT,
-	`mutexes`	TEXT,
+	`requirements`	TEXT NOT NULL,
+	`artifacts`	TEXT NOT NULL,
+	`arguments`	TEXT NOT NULL,
+	`mutexes`	TEXT NOT NULL,
 	`reversible`	INTEGER NOT NULL
 );
 CREATE TABLE IF NOT EXISTS `script` (
 	`name`	TEXT NOT NULL UNIQUE,
 	`description`	TEXT NOT NULL,
-	`revision`	INTEGER NOT NULL UNIQUE,
-	`content`	TEXT NOT NULL UNIQUE,
-	`arguments`	TEXT,
-	`dependencies`	TEXT
+	`revision`	INTEGER NOT NULL,
+	`content`	TEXT NOT NULL,
+	`arguments`	TEXT NOT NULL,
+	`dependencies`	TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS `rule` (
 	`name`	TEXT NOT NULL UNIQUE,
-	`pattern`	TEXT
+	`pattern`	TEXT NOT NULL
 );
 INSERT INTO `rule` VALUES ('required','.');
 INSERT INTO `rule` VALUES ('optional','');
@@ -62,7 +62,7 @@ INSERT INTO `role_type` VALUES ('app','defines an application access policy');
 INSERT INTO `role_type` VALUES ('env','defines an environment access policy');
 CREATE TABLE IF NOT EXISTS `role` (
 	`name`	TEXT NOT NULL UNIQUE,
-	`description`	TEXT,
+	`description`	TEXT NOT NULL,
 	`active`	INTEGER NOT NULL,
 	`access_id`	INTEGER NOT NULL,
 	`type_id`	INTEGER NOT NULL
@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS `lib` (
 	`description`	TEXT NOT NULL,
 	`revision`	INTEGER NOT NULL UNIQUE,
 	`content`	TEXT NOT NULL UNIQUE,
-	`arguments`	TEXT
+	`arguments`	TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS `group_roles` (
 	`group_id`	INTEGER NOT NULL,
@@ -103,8 +103,8 @@ CREATE TABLE IF NOT EXISTS `application` (
 	`name`	TEXT NOT NULL UNIQUE
 );
 CREATE TABLE IF NOT EXISTS `access_type` (
-	`name`	TEXT,
-	`description`	TEXT
+	`name`	TEXT NOT NULL,
+	`description`	TEXT NOT NULL
 );
 INSERT INTO `access_type` VALUES ('read','Allows read access');
 INSERT INTO `access_type` VALUES ('write','read and write access');

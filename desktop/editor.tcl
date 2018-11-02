@@ -65,6 +65,20 @@ oo::class create Editor {
 		]
 	}
 	
+	method insert_template {name args} {
+		my config_text [list -state normal]
+		my delete_between 1.0 end
+		my insert_at 1.0 "proc $name {$args} {\n\n}"
+	}
+	
+	method insert_at {index string} {
+		uplevel 1 [list [my id].text insert $index $string]
+	}
+	
+	method delete_between {start end} {
+		uplevel 1 [list [my id].text delete $start $end]
+	}
+	
 	method highlight_between {start end} {
 		uplevel 1 [list [my id].text highlight $start $end]		
 	}

@@ -38,6 +38,15 @@ oo::class create Toolbar {
 		return [list $parsed_values $default_value]
 	}
 	
+	method add_spacer {} {
+		lappend Elements x
+	}
+	
+	method add_button {name label command} {
+		my add_control $name
+		lappend Elements [::ttk::button	[my id].button_$name -text $label -command $command ]
+	}
+	
 	method add_selector {name label method values} {
 		my add_control $name
 		lassign [my parse_values $values] options default_option
@@ -54,6 +63,10 @@ oo::class create Toolbar {
 	}
 	
 	method display_toolbar {} {
-		grid {*}$Elements
+		grid {*}$Elements -sticky ew
+		set spacers [lsearch -exact -all $Elements x]
+		if {$spacers != -1} {
+			grid columnconfigure [my id] $spacers -weight 1 -uniform spacers
+		}
 	}
 }

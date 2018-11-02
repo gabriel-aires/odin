@@ -56,6 +56,14 @@ proc main {} {
     set tk_user     {}
     set tk_hash     {}
     set tk_changes  0
+    set tk_script   {}
+    set tk_object   {}
+  
+    set new_script_fields {
+      name        text:required
+      description text:optional
+      arguments   text:optional
+    }
   
     set auth_fields {
       login       text:required
@@ -163,6 +171,69 @@ proc main {} {
       $form bind_method [$form id] <Destroy> "finish"    
       $form hire $Window
       $Window title "Authentication"
+      $Window focus
+    }
+    
+    $popup define .new_script_popup {
+      set form [Form new ${Path}.form {} $::conf::new_script_fields $::conf::rules]
+  
+      oo::objdefine $form {
+        mixin DbAccess
+        variable Name Desc Args
+
+        method init_vars {} {
+          set Name  [my repo_val name]
+          set Desc  [my repo_val description]
+          set Args  [my repo_val arguments]
+        }
+        
+        method name_error? {} {
+          my variable Db
+          set saved_names [$Db query {SELECT name FROM script}]
+          return [in $Name $saved_names]
+        }
+        
+        method save_error? {} {
+          my variable Db
+          set retval [catch {
+            $Db query {
+              BEGIN TRANSACTION;
+              INSERT INTO `script` VALUES (:Name,:Desc,1,'',:Args,'');
+              COMMIT;
+            }
+          } log]
+          puts $log
+          return $retval
+        }
+        
+        method submit {} {
+          my init_vars
+          
+          if [my input_error?] {
+            my update_help "ERROR"
+            
+          } elseif [my name_error?] {
+            my update_help "ERROR" "A script named $Name already exists"
+            
+          } elseif [my save_error?] {
+            my update_help "ERROR" "Unable to write into database"
+            
+          } else {
+            my update_help "SUCCESS" "Script $Name created"
+            
+            set ::conf::tk_script $Name
+            $::conf::tk_object insert_template $Name $Args
+            after 1000 "[self] destroy"
+          }
+          
+          my debug_input
+        }
+      }
+
+      pack [$form id]
+      $form use_db $::conf::db
+      $form hire $Window
+      $Window title "New Script..."
       $Window focus
     }
     
@@ -279,7 +350,7 @@ proc main {} {
     pack [$::conf::theme create_banner $layout::left]
     
     $sidebar install {
-      "Step Editor"   "$::components::component display editor"
+      "Script Editor"   "$::components::component display editor"
     }
   }
   
@@ -287,10 +358,13 @@ proc main {} {
   namespace eval components {
     variable component [::Component new $::layout::right]
     
-    $component define editor "Step Definition" {
+    $component define editor "Script Editor" {
       set editor_input [Editor new ${Path}.input {}]
       set editor_tools [Toolbar new ${Path}.tools {}]
+      $editor_input config_text [list -state disabled]
       $editor_tools assign $editor_input
+      $editor_tools add_button new "New" "set ::conf::tk_object $editor_input; $::popups::popup display .new_script_popup"
+      $editor_tools add_spacer
       $editor_tools add_selector theme "Theme: " colorscheme_choose {Standard+ Solarized Monokai}
       $editor_tools display_toolbar
       pack [$editor_tools id] -side top -fill x
