@@ -363,11 +363,18 @@ proc main {} {
     variable component [::Component new $::layout::right]
     
     $component define editor "Script Editor" {
+      
+      proc new_script {editor_obj popup_manager popup_path} {
+        set ::current::object $editor_obj
+        $popup_manager display $popup_path
+      }
+      
+      set ns [namespace current]
       set editor_input [Editor new ${Path}.input {}]
       set editor_tools [Toolbar new ${Path}.tools {}]
       $editor_input config_text [list -state disabled]
       $editor_tools assign $editor_input
-      $editor_tools add_button new "New" "set ::current::object $editor_input; $::popups::popup display .new_script_popup"
+      $editor_tools add_button new "New" [list ${ns}::new_script $editor_input $::popups::popup .new_script_popup]
       $editor_tools add_spacer
       $editor_tools add_selector theme "Theme: " colorscheme_choose {Standard+ Solarized Monokai}
       $editor_tools display_toolbar
