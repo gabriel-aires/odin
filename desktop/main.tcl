@@ -55,9 +55,10 @@ proc main {} {
     set db_path     [file join [pwd] "odin.db"]
   
     set new_script_fields {
-      name        text:required
-      description text:optional
-      arguments   text:optional
+      name          text:required
+      description   text:optional
+      dependencies  text:optional
+      arguments     text:optional
     }
   
     set auth_fields {
@@ -114,7 +115,7 @@ proc main {} {
     set hash     {}
     set changes  0
     set script   {}
-    set object   {}    
+    set object   {}
   }
   
   #layout
@@ -209,22 +210,20 @@ proc main {} {
         }
         
         method submit {} {
+          my variable Db
           my init_vars
           
           if [my input_error?] {
-            my update_help "ERROR"
-            
+            my update_help "ERROR"     
           } elseif [my name_error?] {
             my update_help "ERROR" "A script named $Name already exists"
-            
           } elseif [my save_error?] {
             my update_help "ERROR" "Unable to write into database"
-            
           } else {
             my update_help "SUCCESS" "Script $Name created"
-            
             set ::current::script $Name
-            $::current::object insert_template $Name $Args
+            set template_args [::components::editor::search_script $Name]
+            $::current::object insert_template {*}$template_args
             after 1000 "[self] destroy"
           }
           
@@ -362,6 +361,10 @@ proc main {} {
     
     $component define editor "Script Editor" {
       variable ns [namespace current] input [Editor new ${Path}.input {}] tools [Toolbar new ${Path}.tools {}]
+      
+      proc search_script {name} {
+        $::conf::db query "SELECT * FROM script WHERE name = :name ORDER BY revision DESC LIMIT 1;"
+      } 
       
       proc new_script {} {
         set ::current::object $::components::editor::input

@@ -65,14 +65,30 @@ oo::class create Editor {
 		]
 	}
 	
-	method insert_template {name args} {
+	method build_script {name desc rev body args deps} {
+		set header	[join [list "#Procedure: $name" "#Description: $desc" "#Requirements: $deps" "#Version: $rev"] "\n"]
+		set main    [join [list "proc $name {$args} \{" "$body" "\}"] "\n"]
+		set script	[join [list $header $main] "\n\n"]
+		return $script
+	}
+	
+	method insert_template {args} {
 		my config_text [list -state normal]
 		my delete_between 1.0 end
-		my insert_at 1.0 "proc $name {$args} {\n\n}"
+		my insert_at 1.0 [my build_script {*}$args]
+		my highlight_between 1.0 end
+	}
+	
+	method count_lines {} {
+		uplevel 1 [list [my id].text count -lines 1.0 end]
 	}
 	
 	method insert_at {index string} {
 		uplevel 1 [list [my id].text insert $index $string]
+	}
+
+	method getchars_between {start end} {
+		uplevel 1 [list [my id].text get $start $end]
 	}
 	
 	method delete_between {start end} {
