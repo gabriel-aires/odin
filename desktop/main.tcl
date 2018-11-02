@@ -80,11 +80,13 @@ proc main {} {
     close $about_file
     
     #load additional dependencies
-    lappend ::auto_path [file join $mod_path awthemes2.2] [file join $mod_path ctext3.3] [file join $mod_path menubar0.5]
+    foreach pkg_name $src_pkgs {
+      lappend ::auto_path [file join $mod_path $pkg_name]
+    }
     package require ttk::theme::awdark
     package require ttk::theme::awlight
     package require ctext
-    package require menubar  
+    package require menubar
     
     #load database
     set db_exists [file exists $db_path]
@@ -393,8 +395,7 @@ proc main {} {
       $::conf::db \
       $::conf::theme]
     
-    after 100 "$::popups::popup display .auth_popup"
-    
+    after 100 "$::popups::popup display .auth_popup"    
   }
 }
 
