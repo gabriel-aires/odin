@@ -1,4 +1,3 @@
-BEGIN TRANSACTION;
 CREATE TABLE IF NOT EXISTS `user_type` (
 	`name`	TEXT NOT NULL,
 	`description`	TEXT NOT NULL
@@ -109,4 +108,3 @@ CREATE TABLE IF NOT EXISTS `access_type` (
 INSERT INTO `access_type` VALUES ('read','Allows read access');
 INSERT INTO `access_type` VALUES ('write','read and write access');
 INSERT INTO `access_type` VALUES ('exec','read, write and exec access');
-COMMIT;

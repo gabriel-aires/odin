@@ -87,11 +87,14 @@ proc main {} {
     package require menubar  
     
     #load database
-    set db_schema [open [file join $schema_path db.sql]]
-    set db_sql    [read $db_schema]
-    close $db_schema
+    set db_exists [file exists $db_path]
     set db [Database new $db_path]
-    catch {$db query $db_sql}
+    if [! $db_exists] {
+      set db_schema [open [file join $schema_path db.sql]]
+      set db_sql    [read $db_schema]
+      close $db_schema      
+      $db write $db_sql      
+    }
     set rules [$db query {SELECT * FROM rule}]
     
     #load themes
@@ -142,7 +145,7 @@ proc main {} {
                INNER JOIN user_type t	on u.type_id = t.rowid
                WHERE u.active = 1 AND t.name = 'admin' AND u.name = :User AND u.pass = :Hash
           }]
-          
+          puts "$search"
           return [ne $User $search]
         }
         
@@ -199,14 +202,7 @@ proc main {} {
         
         method save_error? {} {
           my variable Db
-          set retval [catch {
-            $Db query {
-              BEGIN TRANSACTION;
-              INSERT INTO `script` VALUES (:Name,:Desc,1,'',:Args,'');
-              COMMIT;
-            }
-          } log]
-          puts $log
+          set retval [catch {$Db write "INSERT INTO `script` VALUES (:Name,:Desc,1,'',:Args,'');"}]
           return $retval
         }
         
