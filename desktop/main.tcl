@@ -145,7 +145,7 @@ proc main {} {
                INNER JOIN user_type t	on u.type_id = t.rowid
                WHERE u.active = 1 AND t.name = 'admin' AND u.name = :User AND u.pass = :Hash
           }]
-          puts "$search"
+
           return [ne $User $search]
         }
         
