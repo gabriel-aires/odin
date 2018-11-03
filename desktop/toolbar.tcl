@@ -42,6 +42,15 @@ oo::class create Toolbar {
 		lappend Elements x
 	}
 	
+	method config {prefix name option value} {
+		set widget [my id].${prefix}_$name
+		if [in $widget $Elements] {
+			$widget configure $option $value
+		} else {
+			error "error: element $widget not found."
+		}
+	}
+	
 	method add_button {name label command} {
 		my add_control $name
 		lappend Elements [::ttk::button	[my id].button_$name -text $label -command $command ]
@@ -50,8 +59,8 @@ oo::class create Toolbar {
 	method add_selector {name label method values} {
 		my add_control $name
 		lassign [my parse_values $values] options default_option
-		lappend Elements [::ttk::label	[my id].label_$name -text $label]
-		lappend Elements [::ttk::combobox [my id].input_$name -textvariable [my repo_key $name] -state readonly -values $options]
+		lappend Elements [::ttk::label	[my id].selector_label_$name -text $label]
+		lappend Elements [::ttk::combobox [my id].selector_input_$name -textvariable [my repo_key $name] -state readonly -values $options]
 		[my id].input_$name set $default_option
 		my send_command $method $name
 		my bind_method "[my id].input_$name" <<ComboboxSelected>> "send_command $method $name"

@@ -363,9 +363,11 @@ proc main {} {
       variable ns [namespace current]
       variable input [Editor new ${Path}.input {}]
       variable tools [Toolbar new ${Path}.tools {}]
-      set ::state::editor.object $input
-      set ::state::editor.state  disabled
-      set ::state::editor.script {}
+      set ::state::editor.object  $input
+      set ::state::editor.new     normal
+      set ::state::editor.save    disabled
+      set ::state::editor.input   disabled
+      set ::state::editor.script  {}
 
       proc search_script {name} {
         $::conf::db query "SELECT * FROM script WHERE name = :name ORDER BY revision DESC LIMIT 1;"
@@ -375,9 +377,11 @@ proc main {} {
         $::popups::popup display .new_script_popup
       }
       
-      $input config_text [list -state [set ::state::editor.state]]
+      $input config_text [list -state [set ::state::editor.input]]
       $tools assign $input
       $tools add_button new "New" ${ns}::new_script
+      $tools add_button save "Save" ${ns}::save_script
+      $tools config button save -state disabled
       $tools add_spacer
       $tools add_selector theme "Theme: " colorscheme_choose {Standard+ Solarized Monokai}
       $tools display_toolbar
