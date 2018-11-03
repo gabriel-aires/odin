@@ -110,12 +110,11 @@ proc main {} {
   }
   
   #runtime variables
-  namespace eval current {
-    set user     {}
-    set hash     {}
-    set changes  0
-    set script   {}
-    set object   {}
+  namespace eval state {
+    set user    {}
+    set hash    {}
+    set state   {}
+    set changes 0
   }
   
   #layout
@@ -159,14 +158,14 @@ proc main {} {
             my update_help "ERROR" "Invalid User/Password"
           } else {
             my update_help "SUCCESS" "Authentication Successful"
-            after 1000 "set ::current::user $User ; set ::current::hash $Hash ; [self] finish"
+            after 1000 "set ::state::user $User ; set ::state::hash $Hash ; [self] finish"
           }
           
           my debug_input
         }
   
         method finish {} {
-          if {$::current::user eq {}} {
+          if {$::state::user eq {}} {
             $::app::app destroy
           } else {
             [self] destroy
@@ -174,7 +173,7 @@ proc main {} {
         }
       }
 
-      pack [$form id]      
+      pack [$form id]
       $form configure [list -padding 9p]
       $form use_db $::conf::db
       $form bind_method [$form input_id "password"] <Key-Return> "submit"
@@ -221,9 +220,10 @@ proc main {} {
             my update_help "ERROR" "Unable to write into database"
           } else {
             my update_help "SUCCESS" "Script $Name created"
-            set ::current::script $Name
+            set ::state::editor.script $Name
+            set editor_obj [set ::state::editor.object]
             set template_args [::components::editor::search_script $Name]
-            $::current::object insert_template {*}$template_args
+            $editor_obj insert_template {*}$template_args
             after 1000 "[self] destroy"
           }
           
@@ -330,10 +330,10 @@ proc main {} {
     pack [$statusbar id] -side bottom -fill x
     set user_frame  [Container new [$statusbar id].user]
     set user_label  [::ttk::label [$user_frame id].label -text "User: " -justify left]
-    set user_info   [::ttk::label [$user_frame id].info -textvariable ::current::user -justify left]
+    set user_info   [::ttk::label [$user_frame id].info -textvariable ::state::user -justify left]
     set sync_frame  [Container new [$statusbar id].sync]
     set sync_label  [::ttk::label [$sync_frame id].label -text "Changes: " -justify right]
-    set sync_info   [::ttk::label [$sync_frame id].info -textvariable ::current::changes -justify left]
+    set sync_info   [::ttk::label [$sync_frame id].info -textvariable ::state::changes -justify left]
     set rev_frame   [Container new [$statusbar id].rev]
     set rev_info    [::ttk::label [$rev_frame id].info -text "ODIN v1.0" -justify right]
     $statusbar hire [list $user_frame $sync_frame $rev_frame]
@@ -360,18 +360,22 @@ proc main {} {
     variable component [::Component new $::layout::right]
     
     $component define editor "Script Editor" {
-      variable ns [namespace current] input [Editor new ${Path}.input {}] tools [Toolbar new ${Path}.tools {}]
-      
+      variable ns [namespace current]
+      variable input [Editor new ${Path}.input {}]
+      variable tools [Toolbar new ${Path}.tools {}]
+      set ::state::editor.object $input
+      set ::state::editor.state  disabled
+      set ::state::editor.script {}
+
       proc search_script {name} {
         $::conf::db query "SELECT * FROM script WHERE name = :name ORDER BY revision DESC LIMIT 1;"
       } 
       
       proc new_script {} {
-        set ::current::object $::components::editor::input
         $::popups::popup display .new_script_popup
       }
       
-      $input config_text [list -state disabled]
+      $input config_text [list -state [set ::state::editor.state]]
       $tools assign $input
       $tools add_button new "New" ${ns}::new_script
       $tools add_spacer
