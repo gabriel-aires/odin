@@ -1,13 +1,13 @@
 oo::class create Component {
     mixin Contract
-    variable Components CallerNamespace Namespaces Parent
+    variable Components Caller Namespaces Parent
     
     constructor {parent} {
         my setup_contract
-        set Components      {}
-        set CallerNamespace [uplevel 1 "namespace current"]
-        set Namespaces      {}
-        set Parent          $parent
+        set Components  {}
+        set Caller      [uplevel 1 "namespace current"]
+        set Namespaces  {}
+        set Parent      $parent
         my hire [::Container new $Parent /]
         pack $Parent -fill both -expand 1
     }
@@ -17,7 +17,7 @@ oo::class create Component {
         if [my defined? $path] {
             error "Component $path already defined"
         } else {
-            dict set Components $path namespace ${CallerNamespace}::${basepath}
+            dict set Components $path namespace ${Caller}::${basepath}
             dict set Components $path title     $title
             dict set Components $path script    $body
             dict set Components $path object    {}

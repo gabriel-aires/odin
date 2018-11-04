@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS `step` (
 	`reversible`	INTEGER NOT NULL
 );
 CREATE TABLE IF NOT EXISTS `script` (
-	`name`	TEXT NOT NULL UNIQUE,
+	`name`	TEXT NOT NULL,
 	`description`	TEXT NOT NULL,
 	`revision`	INTEGER NOT NULL,
 	`content`	TEXT NOT NULL,

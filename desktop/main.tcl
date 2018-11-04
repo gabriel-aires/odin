@@ -109,7 +109,7 @@ proc main {} {
     }  
   }
   
-  #runtime variables
+  #application wide state
   namespace eval state {
     set user    {}
     set hash    {}
@@ -188,7 +188,7 @@ proc main {} {
   
       oo::objdefine $form {
         mixin DbAccess
-        variable Name Desc Args
+        variable Name Desc Args Db
 
         method init_vars {} {
           set Name  [my repo_val name]
@@ -197,19 +197,16 @@ proc main {} {
         }
         
         method name_error? {} {
-          my variable Db
           set saved_names [$Db query {SELECT name FROM script}]
           return [in $Name $saved_names]
         }
         
         method save_error? {} {
-          my variable Db
           set retval [catch {$Db write "INSERT INTO `script` VALUES (:Name,:Desc,1,'',:Args,'');"}]
           return $retval
         }
         
         method submit {} {
-          my variable Db
           my init_vars
           
           if [my input_error?] {
@@ -220,10 +217,12 @@ proc main {} {
             my update_help "ERROR" "Unable to write into database"
           } else {
             my update_help "SUCCESS" "Script $Name created"
-            set ::state::editor.script $Name
-            set editor_obj [set ::state::editor.object]
-            set template_args [::components::editor::search_script $Name]
-            $editor_obj insert_template {*}$template_args
+            set ::components::editor::state(script) $Name
+            namespace eval ::components::editor {
+              $input insert_template {*}[search_script $state(script)]
+              $input config_text [list -state [set state(input) normal]]
+              $tools config button save -state [set state(save) normal]              
+            }
             after 1000 "[self] destroy"
           }
           
@@ -363,21 +362,51 @@ proc main {} {
       variable ns [namespace current]
       variable input [Editor new ${Path}.input {}]
       variable tools [Toolbar new ${Path}.tools {}]
-      set ::state::editor.object  $input
-      set ::state::editor.new     normal
-      set ::state::editor.save    disabled
-      set ::state::editor.input   disabled
-      set ::state::editor.script  {}
-
+      variable state
+      
+      array set state {
+        new     normal
+        save    disabled
+        input   disabled
+        script  {}
+      }
+      
       proc search_script {name} {
         $::conf::db query "SELECT * FROM script WHERE name = :name ORDER BY revision DESC LIMIT 1;"
-      } 
+      }
+      
+      proc save_script {} {
+        set ns [namespace current]
+        set current_state  [$ns::input parse_script]
+        set previous_state [${ns}::search_script $ns::state(script)]
+        lassign $current_state name desc rev body args deps
+        lassign $previous_state prev_name prev_desc prev_rev prev_body prev_args prev_deps
+
+        if [eq $current_state $previous_state] {
+          tk_messageBox -title "Info" -message "No changes since last revision" -icon info -type ok        
+        } elseif [eq $current_result "parse_error"] {
+          tk_messageBox -title "Save Error" -message "Script could not be parsed." -icon error -type ok
+        } elseif [ne [lindex $name $prev_name] {
+          tk_messageBox -title "Save Error" -message "Invalid name change" -icon error -type ok  
+        } elseif [ne $rev $prev_rev] {
+          tk_messageBox -title "Save Error" -message "Invalid version change" -icon error -type ok  
+        } else {
+          incr rev
+          try {
+            $::conf::db write {INSERT INTO `script` VALUES (:name,:desc,:rev,:body,:args,:deps);}
+          } on error {msg} {
+            tk_messageBox -title "Save Error" -message "Database write error" -detail "$msg" -icon error -type ok  
+          } on ok {} {
+            tk_messageBox -title "Info" -message "Version $rev created for script $name" -icon error -type ok              
+          }
+        }
+      }
       
       proc new_script {} {
         $::popups::popup display .new_script_popup
       }
       
-      $input config_text [list -state [set ::state::editor.input]]
+      $input config_text [list -state $state(input)]
       $tools assign $input
       $tools add_button new "New" ${ns}::new_script
       $tools add_button save "Save" ${ns}::save_script

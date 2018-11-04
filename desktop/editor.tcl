@@ -2,12 +2,12 @@ oo::class create Editor {
 	superclass Container
 	variable TclCommands EditorScheme ColorSchemes HighlightClasses
 
-	constructor {parent label} {
+	constructor {parent label rules} {
 		next $parent $label
 		my setup_scrollbar
 		my setup_text
 		my init_editor
-		set TclCommands			{after append array binary break case catch clock close concat continue eof error eval \
+		set TclCommands	{after append array binary break case catch clock close concat continue eof error eval \
 			expr fblocked fcopy fileevent flush for foreach format gets global if incr info interp join lappend \
 		  	lindex linsert list llength lrange lreplace lsearch lsort namespace package pid proc puts read regexp \
 		  	regsub rename return scan seek set split string subst switch tell time trace unset update uplevel upvar \
@@ -64,9 +64,39 @@ oo::class create Editor {
 			-linemapfg [dict get $ColorSchemes $EditorScheme fg] \
 		]
 	}
+
+	method parse_script {} {
+		set size	[my count_lines]
+		set name	[my getchars_between 1.[string length "#Procedure: "] 1.end]
+		set desc	[my getchars_between 2.[string length "#Description: "] 2.end]
+		set args	[my getchars_between 3.[string length "#Arguments: "] 3.end]
+		set deps	[my getchars_between 4.[string length "#Requirements: "] 4.end]
+		set rev		[my getchars_between 5.[string length "#Version: "] 5.end]
+		set procdef	[my getchars_between 7.0 7.end]
+		set body	[my getchars_between 8.0 [- $size 1].end]
+		set end		[my getchars_between ${size}.0 ${size}.end]
+		
+		if { \
+			[>= $size 9] && \
+			[ne $name {}] && \
+			[regexp -expanded {^[0-9]+$} $rev] && \
+			[regexp -expanded "^proc $name \{$args\} \{$" $procdef] \
+		} {
+			return [list $name $desc $rev $body $args $deps]
+		} else {
+			return "parse_error"
+		}
+	}
 	
 	method build_script {name desc rev body args deps} {
-		set header	[join [list "#Procedure: $name" "#Description: $desc" "#Requirements: $deps" "#Version: $rev"] "\n"]
+		set header_info [list \
+			"#Procedure: $name" \
+			"#Description: $desc" \
+			"#Arguments: $args" \
+			"#Requirements: $deps" \
+			"#Version: $rev" \
+		]
+		set header	[join $header_info "\n"]
 		set main    [join [list "proc $name {$args} \{" "$body" "\}"] "\n"]
 		set script	[join [list $header $main] "\n\n"]
 		return $script

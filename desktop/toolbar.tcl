@@ -61,9 +61,9 @@ oo::class create Toolbar {
 		lassign [my parse_values $values] options default_option
 		lappend Elements [::ttk::label	[my id].selector_label_$name -text $label]
 		lappend Elements [::ttk::combobox [my id].selector_input_$name -textvariable [my repo_key $name] -state readonly -values $options]
-		[my id].input_$name set $default_option
+		[my id].selector_input_$name set $default_option
 		my send_command $method $name
-		my bind_method "[my id].input_$name" <<ComboboxSelected>> "send_command $method $name"
+		my bind_method "[my id].selector_input_$name" <<ComboboxSelected>> "send_command $method $name"
 	}
 	
 	method send_command {method name} {

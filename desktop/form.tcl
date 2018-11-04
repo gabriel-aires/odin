@@ -3,7 +3,7 @@ oo::class create Form {
 	mixin Repository Validation
 	variable Entries HelpMsg
 
-	constructor {args} {		
+	constructor {args} {
 		set path	[lindex $args 0]
 		set label	[lindex $args 1]
 		set fields	[lindex $args 2]
