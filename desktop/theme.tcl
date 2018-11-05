@@ -44,9 +44,13 @@ oo::class create Theme {
 
 	method theme_update {} {
 		::ttk::style theme use [my theme_name]
+		set banners_found {}
 		foreach banner $Banners {
-			$banner configure -image [my theme_logo]
+			if [! [catch {$banner configure -image [my theme_logo]}]] {
+				lappend banners_found $banner
+			}
 		}
+		set Banners $banners_found
 	}
 
 	destructor {
