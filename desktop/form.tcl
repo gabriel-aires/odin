@@ -1,7 +1,7 @@
 oo::class create Form {
 	superclass Container
 	mixin Repository Validation
-	variable Entries HelpMsg
+	variable Entries HelpMsg DefaultColor
 
 	constructor {args} {
 		set path	[lindex $args 0]
@@ -26,6 +26,7 @@ oo::class create Form {
 		my display_submit
 		my setup_help
 		my display_help	
+		set DefaultColor [lindex [my config_help -foreground] end]
 	}
 	
 	method input_label {key} {
@@ -82,9 +83,7 @@ oo::class create Form {
 	
 	method setup_help {} {
 		set HelpMsg "Enter required information (*)"
-		::ttk::label "[my id].help" -text $HelpMsg -justify center
-		my config_help {-foreground #000000}
-		
+		::ttk::label "[my id].help" -text $HelpMsg -justify center		
 	}
 	
 	method config_help {options} {
@@ -98,7 +97,7 @@ oo::class create Form {
 		
 		switch $level {
 			INFO {
-				my config_help [list -text $HelpMsg -foreground #000000]
+				my config_help [list -text $HelpMsg -foreground $DefaultColor]
 			}
 			ERROR {
 				my config_help [list -text $HelpMsg -foreground #c3063c]

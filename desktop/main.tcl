@@ -101,7 +101,7 @@ proc main {} {
     set rules [$db query {SELECT * FROM rule}]
     
     #load themes
-    set theme [Theme new [file join $asset_path logo_black.png] [file join $asset_path logo_white.png]]
+    set theme [Theme new [file join $asset_path logo_black_alt.png] [file join $asset_path logo_white_alt.png]]
     if {$tcl_platform(platform) eq "unix"} {
       $theme theme_choose "Light"
     } else {
@@ -376,17 +376,16 @@ proc main {} {
       }
       
       proc save_script {} {
-        set ns [namespace current]
-        set current_state  [$ns::input parse_script]
-        set previous_state [${ns}::search_script $ns::state(script)]
+        set current_state  [$::components::editor::input parse_script]
+        set previous_state [::components::editor::search_script $::components::editor::state(script)]
         lassign $current_state name desc rev body args deps
         lassign $previous_state prev_name prev_desc prev_rev prev_body prev_args prev_deps
 
         if [eq $current_state $previous_state] {
           tk_messageBox -title "Info" -message "No changes since last revision" -icon info -type ok        
-        } elseif [eq $current_result "parse_error"] {
+        } elseif [eq $current_state "parse_error"] {
           tk_messageBox -title "Save Error" -message "Script could not be parsed." -icon error -type ok
-        } elseif [ne [lindex $name $prev_name] {
+        } elseif [ne $name $prev_name] {
           tk_messageBox -title "Save Error" -message "Invalid name change" -icon error -type ok  
         } elseif [ne $rev $prev_rev] {
           tk_messageBox -title "Save Error" -message "Invalid version change" -icon error -type ok  
