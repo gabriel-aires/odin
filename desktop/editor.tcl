@@ -76,11 +76,15 @@ oo::class create Editor {
 		set body	[my getchars_between 8.0 [- $size 1].end]
 		set end		[my getchars_between ${size}.0 ${size}.end]
 		
+		#replace variables and braces, test should return "# OK # "
+		set testdef [string map "proc # $name OK \\\{$args\\\} #" [string trimright $procdef \{]]
+				
 		if { \
 			[>= $size 9] && \
 			[ne $name {}] && \
 			[regexp -expanded {^[0-9]+$} $rev] && \
-			[regexp -expanded "^proc $name \{$args\} \{$" $procdef] \
+			[eq $testdef {# OK # }] && \
+			[eq $end \}]
 		} {
 			return [list $name $desc $rev $body $args $deps]
 		} else {
@@ -90,16 +94,24 @@ oo::class create Editor {
 	
 	method build_script {name desc rev body args deps} {
 		set header_info [list \
-			"# Procedure ........ $name" \
-			"# Description ...... $desc" \
-			"# Arguments ........ $args" \
-			"# Requirements ..... $deps" \
-			"# Version .......... $rev" \
+			"# Procedure ....... $name" \
+			"# Description ..... $desc" \
+			"# Arguments ....... $args" \
+			"# Requirements .... $deps" \
+			"# Version ......... $rev" \
 		]
 		set header	[join $header_info "\n"]
 		set main    [join [list "proc $name {$args} \{" "$body" "\}"] "\n"]
 		set script	[join [list $header $main] "\n\n"]
 		return $script
+	}
+	
+	method increase_revision {} {
+		set rev [my getchars_between 5.20 5.end]
+		my delete_between 5.20 5.end
+		my insert_at 5.20 [incr rev]
+		my highlight_between 1.0 end
+		return $rev
 	}
 	
 	method insert_template {args} {

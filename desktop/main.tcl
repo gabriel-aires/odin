@@ -379,19 +379,19 @@ proc main {} {
         if [eq $current_state $previous_state] {
           tk_messageBox -title "Info" -message "No changes since last revision" -icon info -type ok        
         } elseif [eq $current_state "parse_error"] {
-          tk_messageBox -title "Save Error" -message "Script could not be parsed." -icon error -type ok
+          tk_messageBox -title "Error" -message "Script could not be parsed." -icon error -type ok
         } elseif [ne $name $prev_name] {
-          tk_messageBox -title "Save Error" -message "Invalid name change" -icon error -type ok  
+          tk_messageBox -title "Error" -message "Invalid name change" -icon error -type ok  
         } elseif [ne $rev $prev_rev] {
-          tk_messageBox -title "Save Error" -message "Invalid version change" -icon error -type ok  
+          tk_messageBox -title "Error" -message "Invalid version change" -icon error -type ok  
         } else {
-          incr rev
-          try {
+          set rev [$::components::editor::input increase_revision]
+          try {            
             $::conf::db write {INSERT INTO `script` VALUES (:name,:desc,:rev,:body,:args,:deps);}
           } on error {msg} {
-            tk_messageBox -title "Save Error" -message "Database write error" -detail "$msg" -icon error -type ok  
+            tk_messageBox -title "Error" -message "Database write error" -detail "$msg" -icon error -type ok  
           } on ok {} {
-            tk_messageBox -title "Info" -message "Version $rev created for script $name" -icon error -type ok              
+            tk_messageBox -title "Info" -message "Version $rev created for script $name" -icon info -type ok              
           }
         }
       }
