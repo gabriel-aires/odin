@@ -1,32 +1,26 @@
 oo::class create Theme {
-	variable Themes ChosenTheme Banners FontsAvailable FontsCreated
+	variable Themes ChosenTheme ChosenFont Banners FontsAvailable FontsCreated
 
 	constructor {dark_logo light_logo} {
 
 		if [! [& [file exists $dark_logo] [file exists $light_logo]]] {
 			error "error: theme could not be loaded due to missing image files"
 		}
-
+		
 		#setup themes and logos
 		set dark_img 	[image create photo -file $dark_logo]
 		set light_img 	[image create photo -file $light_logo]
 		set Banners 	{}
-		set ChosenTheme "Default"
+		set ChosenTheme {}
 		dict set Themes "Default"	"name" [ttk::style theme use]
 		dict set Themes "Default"	"logo" $dark_img
 		dict set Themes "Light"		"name" "awlight"
 		dict set Themes "Light"		"logo" $dark_img
 		dict set Themes "Dark"		"name" "awdark"
 		dict set Themes "Dark"		"logo" $light_img
-					
-		#set system default theme
-		if {$::tcl_platform(platform) eq "unix"} {
-			my theme_choose "Light"				
-		} else {
-			my theme_choose "Default"
-		}
 		
 		#setup custom fonts
+		set ChosenFont		{}
 		set FontsAvailable	[font families]
 		set FontsCreated	{}
 		set regular_fonts 	{
@@ -55,7 +49,14 @@ oo::class create Theme {
 		
 		my create_font "monospace_font" 9 $monospace_fonts
 		my create_font "regular_font" 9 $regular_fonts
-		my apply_font "regular_font"
+		my font_choose "regular_font"
+		
+		#set system default theme
+		if {$::tcl_platform(platform) eq "unix"} {
+			my theme_choose "Light"				
+		} else {
+			my theme_choose "Default"
+		}
 	}
 
 	method create_font {name size family_list} {
@@ -71,12 +72,18 @@ oo::class create Theme {
 		}
 	}
 	
-	method apply_font {name} {
+	method font_choose {name} {
 		if [in $name $FontsCreated] {
-			option add *font $name
-			foreach class {TButton TCombobox TEntry TNotebook.Tab} {
-				::ttk::style configure $class -font $name
-			}
+			set ChosenFont $name
+			my font_update
+		}
+	}	
+	
+	method font_update {} {
+		option clear
+		option add *font $ChosenFont
+		foreach class {TButton TCombobox TEntry TNotebook.Tab} {
+			::ttk::style configure $class -font $ChosenFont
 		}
 	}
 	
@@ -113,6 +120,7 @@ oo::class create Theme {
 			}
 		}
 		set Banners $banners_found
+		my font_update
 	}
 
 	destructor {
