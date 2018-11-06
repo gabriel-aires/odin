@@ -170,7 +170,7 @@ oo::class create Editor {
 	}
 
 	method setup_text {} {
-		set text [ctext [my id].text -yscrollcommand "[my id].scroll set"]
+		set text [ctext [my id].text -yscrollcommand "[my id].scroll set" -font "monospace_font"]
 		pack $text -fill both -expand 1
 	}
 	

@@ -100,13 +100,8 @@ proc main {} {
     }
     set rules [$db query {SELECT * FROM rule}]
     
-    #load themes
+    #load themes, logos and fonts
     set theme [Theme new [file join $asset_path logo_black_alt.png] [file join $asset_path logo_white_alt.png]]
-    if {$tcl_platform(platform) eq "unix"} {
-      $theme theme_choose "Light"
-    } else {
-      $theme theme_choose "Default"
-    }  
   }
   
   #application wide state
