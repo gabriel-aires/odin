@@ -67,11 +67,11 @@ oo::class create Editor {
 
 	method parse_script {} {
 		set size	[my count_lines]
-		set name	[my getchars_between 1.16 1.end]
-		set desc	[my getchars_between 2.16 2.end]
-		set args	[my getchars_between 3.16 3.end]
-		set deps	[my getchars_between 4.16 4.end]
-		set rev		[my getchars_between 5.16 5.end]
+		set name	[my getchars_between 1.20 1.end]
+		set desc	[my getchars_between 2.20 2.end]
+		set args	[my getchars_between 3.20 3.end]
+		set deps	[my getchars_between 4.20 4.end]
+		set rev		[my getchars_between 5.20 5.end]
 		set procdef	[my getchars_between 7.0 7.end]
 		set body	[my getchars_between 8.0 [- $size 1].end]
 		set end		[my getchars_between ${size}.0 ${size}.end]
@@ -90,11 +90,11 @@ oo::class create Editor {
 	
 	method build_script {name desc rev body args deps} {
 		set header_info [list \
-			"#Procedure ..... $name" \
-			"#Description ... $desc" \
-			"#Arguments ..... $args" \
-			"#Requirements .. $deps" \
-			"#Version ....... $rev" \
+			"# Procedure ........ $name" \
+			"# Description ...... $desc" \
+			"# Arguments ........ $args" \
+			"# Requirements ..... $deps" \
+			"# Version .......... $rev" \
 		]
 		set header	[join $header_info "\n"]
 		set main    [join [list "proc $name {$args} \{" "$body" "\}"] "\n"]
