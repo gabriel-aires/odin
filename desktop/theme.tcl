@@ -23,28 +23,42 @@ oo::class create Theme {
 		set ChosenFont		{}
 		set FontsAvailable	[font families]
 		set FontsCreated	{}
-		set regular_fonts 	{
-			"droid sans"
-			"trebuchet ms"
-			"lucida sans unicode"
-			"tahoma"
-			"verdana"
-			"arial"
-			"helvetica"
-			"liberation sans"
-			"sans-serif"
-			"dejavu sans"
-			"bitstream vera sans"
+		set regular_fonts	{}
+		set monospace_fonts	{}
+		
+		foreach font {
+			"Droid Sans"
+			"Segoe UI"
+			"Lucida Sans Unicode"
+			"Calibri"
+			"Trebuchet MS"
+			"Century Gothic"
+			"Tahoma"
+			"Verdana"
+			"Arial"
+			"Georgia"
+			"Helvetica"
+			"Liberation Sans"
+			"DejaVu Sans"
+			"Bitstream Vera Sans"		
+		} {
+			lappend regular_fonts $font [string tolower $font]
 		}
-		set monospace_fonts	{
-			"droid sans mono"
-			"hack"
-			"inconsolata"
-			"monospace"
-			"liberation mono"
-			"dejavu sans mono"
-			"bitstream vera sans mono"
-			"courier new"
+		
+		foreach font {
+			"Droid Sans Mono"
+			"Consolas"
+			"Hack"
+			"Inconsolata"
+			"Lucida Console"
+			"Liberation Mono"
+			"DejaVu Sans Mono"
+			"Bitstream Vera Sans Mono"
+			"Courier New"
+			"System"
+			"Terminal"
+		} {
+			lappend monospace_fonts $font [string tolower $font]
 		}
 		
 		my create_font "monospace_font" 9 $monospace_fonts
