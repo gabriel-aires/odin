@@ -84,8 +84,13 @@ proc main {} {
     foreach pkg_name $src_pkgs {
       lappend ::auto_path [file join $mod_path $pkg_name]
     }
+    package require ttk::theme::Arc
     package require ttk::theme::awdark
     package require ttk::theme::awlight
+    package require ttk::theme::black
+    package require ttk::theme::clearlooks
+    package require ttk::theme::radiance
+    package require ttk::theme::waldorf
     package require ctext
     package require menubar
     
@@ -294,8 +299,13 @@ proc main {} {
       View M:view {
         Theme       S       separator1
         Default     R       theme_selector
-        Light       R       theme_selector
-        Dark        R       theme_selector
+        Arc         R       theme_selector
+        Awlight     R       theme_selector
+        Awdark      R       theme_selector
+        Black       R       theme_selector
+        Clearlooks  R       theme_selector
+        Radiance    R       theme_selector
+        Waldorf     R       theme_selector
       }
       Settings M:settings {
         Agent       C       agent

@@ -12,12 +12,22 @@ oo::class create Theme {
 		set light_img 	[image create photo -file $light_logo]
 		set Banners 	{}
 		set ChosenTheme {}
-		dict set Themes "Default"	"name" [ttk::style theme use]
-		dict set Themes "Default"	"logo" $dark_img
-		dict set Themes "Light"		"name" "awlight"
-		dict set Themes "Light"		"logo" $dark_img
-		dict set Themes "Dark"		"name" "awdark"
-		dict set Themes "Dark"		"logo" $light_img
+		dict set Themes "Default"		"name" [ttk::style theme use]
+		dict set Themes "Default"		"logo" $dark_img
+		dict set Themes "Arc"			"name" "Arc"
+		dict set Themes "Arc"			"logo" $dark_img
+		dict set Themes "Awdark"		"name" "awdark"
+		dict set Themes "Awdark"		"logo" $light_img		
+		dict set Themes "Awlight"		"name" "awlight"
+		dict set Themes "Awlight"		"logo" $dark_img
+		dict set Themes "Black"			"name" "black"
+		dict set Themes "Black"			"logo" $light_img
+		dict set Themes "Clearlooks"	"name" "clearlooks"
+		dict set Themes "Clearlooks"	"logo" $dark_img
+		dict set Themes "Radiance"		"name" "radiance"
+		dict set Themes "Radiance"		"logo" $dark_img		
+		dict set Themes "Waldorf"		"name" "waldorf"
+		dict set Themes "Waldorf"		"logo" $dark_img
 		
 		#setup custom fonts
 		set ChosenFont		{}
@@ -67,7 +77,7 @@ oo::class create Theme {
 		
 		#set system default theme
 		if {$::tcl_platform(platform) eq "unix"} {
-			my theme_choose "Light"				
+			my theme_choose "Arc"				
 		} else {
 			my theme_choose "Default"
 		}
