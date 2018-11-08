@@ -24,6 +24,7 @@ set settings  [::json::json2dict [read $json_file]]
 close $json_file
 
 #import classes
+source [file join $vfs_root utils.tcl]
 source [file join $vfs_root event.tcl]
 source [file join $vfs_root contract.tcl]
 source [file join $vfs_root theme.tcl]
