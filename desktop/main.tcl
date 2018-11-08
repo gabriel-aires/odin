@@ -91,7 +91,6 @@ proc main {} {
     package require ttk::theme::awlight
     package require ttk::theme::black
     package require ttk::theme::clearlooks
-    package require ttk::theme::radiance
     package require ttk::theme::waldorf
     package require ctext
     package require menubar
@@ -306,7 +305,6 @@ proc main {} {
         Awdark      R       theme_selector
         Black       R       theme_selector
         Clearlooks  R       theme_selector
-        Radiance    R       theme_selector
         Waldorf     R       theme_selector
       }
       Settings M:settings {
@@ -359,6 +357,16 @@ proc main {} {
     $sidebar install {
       "Script Editor"   "$::components::component display editor"
       "Script Manager"  "$::components::component display version_control"
+      "Task Composer"   "$::components::component display task_composer"
+      "Task Manager"    "$::components::component display task_manager"
+      "Environments"    "$::components::component display environments"
+      "Agents"          "$::components::component display agents"
+      "Users"           "$::components::component display users"
+      "Groups"          "$::components::component display users"
+      "Roles"           "$::components::component display roles"
+      "Reports"         "$::components::component display reports"
+      "Maintenance"     "$::components::component display maintenance"
+      "Synchronization" "$::components::component display sync"
     }
   }
 
@@ -384,8 +392,10 @@ proc main {} {
       }
 
       proc save_script {} {
-        set current_state  [$::components::editor::input parse_script]
-        set previous_state [::components::editor::search_script $::components::editor::state(script)]
+        variable input
+        variable state
+        set current_state  [$input parse_script]
+        set previous_state [search_script $state(script)]
         lassign $current_state name desc rev body args deps
         lassign $previous_state prev_name prev_desc prev_rev prev_body prev_args prev_deps
 
@@ -398,7 +408,7 @@ proc main {} {
         } elseif [ne $rev $prev_rev] {
           tk_messageBox -title "Error" -message "Invalid version change" -icon error -type ok
         } else {
-          set rev [$::components::editor::input increase_revision]
+          set rev [$input increase_revision]
           try {
             $::conf::db write {INSERT INTO `script` VALUES (:name,:desc,:rev,:body,:args,:deps);}
           } on error {msg} {
@@ -417,6 +427,7 @@ proc main {} {
       $tools assign $input
       $tools add_button new "New" ${ns}::new_script
       $tools add_button save "Save" ${ns}::save_script
+      $tools add_button open "Open" "$::components::component display version_control"
       $tools config button save -state disabled
       $tools add_spacer
       $tools add_selector theme "Theme: " colorscheme_choose {Standard+ Solarized Monokai}
@@ -427,18 +438,14 @@ proc main {} {
     }
 
     $component define version_control "Script Manager" {
+      variable ns    [namespace current]
       variable table [Table new ${Path}.table {} [list Description Arguments Requirements]]
       variable tools [Toolbar new ${Path}.tools {}]
-      variable state
-
-      array set state {
-        edit_source  disabled
-        script       {}
-        script_args  {}
-      }
 
       proc find_version {name revision} {
-         return [$::conf::db query "SELECT * FROM script WHERE name = :name and revision = :revision;"]
+         return [$::conf::db query {
+           SELECT * FROM script WHERE name = :name and revision = :revision;
+         }]
       }
 
       proc find_scripts {} {
@@ -446,34 +453,41 @@ proc main {} {
       }
 
       proc edit_script {} {
-        set name                [$::components::version_control::table this_parent]
-        set revision            [$::components::version_control::table this_id]
-        set state(script)       $name
-        set state(script_args)  [::components::version_control::find_version $name $revision]
+        variable table
+        if [eq [$table this_parent] {}] {
+          tk_messageBox -title "Info" -message "Please select a script version" -icon info -type ok
+        } else {
+          $::components::component display editor
+          namespace eval ::components::editor {
+            set name                [$::components::version_control::table this_parent]
+            set revision            [$::components::version_control::table this_id]
+            set state(script)       $name
+            $input insert_template {*}[::components::version_control::find_version $name $revision]
+            $input config_text [list -state [set state(input) normal]]
+            $tools config button save -state [set state(save) normal]
+          }
+        }
+      }
 
-        $::components::component display editor
-        namespace eval ::components::editor {
-          set state(script) $::components::version_control::state(script)
-          $input insert_template {*}[$::components::version_control::state(script_args)]
-          $input config_text [list -state [set state(input) normal]]
-          $tools config button save -state [set state(save) normal]
+      proc refresh {} {
+        variable table
+        $table clear_table
+        set script_names [find_scripts]
+        foreach name $script_names {
+          set sql "SELECT revision, description, arguments, dependencies FROM script WHERE name = '$name'"
+          $table insert_group {} $name
+          $table insert_batch $name $sql
         }
       }
 
       $table use_db $::conf::db
-      set script_names [find_scripts]
-      set sql "SELECT revision, description, arguments, dependencies WHERE name = :name"
-      foreach name $script_names {
-        $table insert_group {} $name
-        $table insert_batch $name $sql
-      }
-
+      refresh
       $tools assign $table
       $tools add_button edit "Edit" ${ns}::edit_script
-      $tools config button edit -state disabled
+      $tools add_button refresh "Refresh" ${ns}::refresh
       $tools display_toolbar
-      pack [$tools id] -side bottom -fill x
-      pack [$input id] -fill both -expand 1
+      pack [$tools id] -side top -fill x
+      pack [$table id] -fill both -expand 1
       $Frame hire [list $table $tools]
     }
   }

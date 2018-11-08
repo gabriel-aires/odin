@@ -74,7 +74,7 @@ oo::class create Toolbar {
 	method display_toolbar {} {
 		grid {*}$Elements -sticky ew
 		set spacers [lsearch -exact -all $Elements x]
-		if {$spacers != -1} {
+		if {$spacers ne {}} {
 			grid columnconfigure [my id] $spacers -weight 1 -uniform spacers
 		}
 	}

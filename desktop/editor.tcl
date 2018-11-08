@@ -76,14 +76,15 @@ oo::class create Editor {
 		set body	[my getchars_between 8.0 [- $size 1].end]
 		set end		[my getchars_between ${size}.0 ${size}.end]
 		
-		#replace variables and braces, test should return "# OK # "
-		set testdef [string map "proc # $name OK \\\{$args\\\} #" [string trimright $procdef \{]]
+		#replace spaces and braces
+    set safe_args [string map {" " ""} $args]
+    set testdef [string trimright [string map {" " ""} $procdef] \{]
 				
 		if { \
 			[>= $size 9] && \
 			[ne $name {}] && \
 			[regexp -expanded {^[0-9]+$} $rev] && \
-			[eq $testdef {# OK # }] && \
+			[eq $testdef "proc$name{$safe_args}"] && \
 			[eq $end \}]
 		} {
 			return [list $name $desc $rev $body $args $deps]

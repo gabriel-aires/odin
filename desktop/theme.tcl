@@ -24,8 +24,6 @@ oo::class create Theme {
 		dict set Themes "Black"			"logo" $light_img
 		dict set Themes "Clearlooks"	"name" "clearlooks"
 		dict set Themes "Clearlooks"	"logo" $dark_img
-		dict set Themes "Radiance"		"name" "radiance"
-		dict set Themes "Radiance"		"logo" $dark_img		
 		dict set Themes "Waldorf"		"name" "waldorf"
 		dict set Themes "Waldorf"		"logo" $dark_img
 		
@@ -154,3 +152,4 @@ oo::class create Theme {
 		puts "theme object destroyed, ref: [self]"
 	}
 }
+

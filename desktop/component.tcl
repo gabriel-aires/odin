@@ -1,7 +1,7 @@
 oo::class create Component {
     mixin Contract
     variable Components Caller Namespaces Parent
-    
+
     constructor {parent} {
         my setup_contract
         set Components  {}
@@ -23,7 +23,7 @@ oo::class create Component {
             dict set Components $path object    {}
         }
     }
-    
+
     method defined? {path} {
         if {$path in [dict keys $Components]} {
             return 1
@@ -31,7 +31,7 @@ oo::class create Component {
             return 0
         }
     }
-    
+
     method active? {path} {
         set obj [dict get $Components $path object]
         if {$obj ne {}} {
@@ -39,7 +39,7 @@ oo::class create Component {
         }
         return 0
     }
-    
+
     method Init {path} {
         set title       [dict get $Components $path title]
         set script      [dict get $Components $path script]
@@ -51,12 +51,13 @@ oo::class create Component {
         lappend Namespaces $namespace
         set options [list -side bottom -anchor e -padx 5p -pady 5p]
         pack [::ttk::button ${path}.close_tab -text "Close" -command "[self] close $path"] {*}$options
+        my Reveal $path
     }
 
     method Reveal {path} {
         $Parent select $path
     }
-       
+
     method display {basepath} {
         set path ${Parent}.${basepath}
         if [my defined? $path] {
@@ -69,15 +70,15 @@ oo::class create Component {
             error "Component unknown: $path"
         }
     }
-    
+
     method close {path} {
         if [my active? $path] {
-            $Parent forget $path            
+            $Parent forget $path
             my dismiss [dict get $Components $path object]
             dict set Components $path object {}
         }
     }
-    
+
     destructor {
         my terminate
         foreach ns $Namespaces {
@@ -86,3 +87,4 @@ oo::class create Component {
         }
     }
 }
+

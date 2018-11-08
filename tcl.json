@@ -1,10 +1,10 @@
 {
   "asset_folder":     "assets",
-  "db_folder":        "db",  
+  "db_folder":        "db",
   "mod_folder":       "modules",
-  "wrap_folder":      "wrap",  
+  "wrap_folder":      "wrap",
   "lib_path":         "lib",
-  "api_path":         "api",  
+  "api_path":         "api",
   "web_path":         "web",
   "desktop_path":     "desktop",
   "build_path":       "build",
@@ -17,16 +17,16 @@
       "src_pkgs":     [ "wapp1.0" ],
       "dll_pkgs":     [ "twapi4.3.5" ],
       "tcp_port":     "3000",
-      "web_ctx":      "/odin",      
+      "web_ctx":      "/odin",
       "web_assets":   [ "logo_black.png", "logo_white.png" ],
       "html_folder":  "html",
       "elm_bin":      "elm"
     },
     "desktop": {
       "exe_name":     "odin-admin",
-      "src_pkgs":     [ "arc0.1", "awthemes2.2", "black0.0.1", "clearlooks0.1", "radiance0.1", "waldorf0.1", "ctext3.3", "menubar0.5" ],
+      "src_pkgs":     [ "arc0.1", "awthemes2.2", "black0.0.1", "clearlooks0.1", "waldorf0.1", "ctext3.3", "menubar0.5" ],
       "dll_pkgs":     []
-    },    
+    },
     "agent": {
       "exe_name":     "odin-agent",
       "src_pkgs":     [],
