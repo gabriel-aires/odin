@@ -34,6 +34,7 @@ source [file join $vfs_root dbaccess.tcl]
 source [file join $vfs_root container.tcl]
 source [file join $vfs_root sidebar.tcl]
 source [file join $vfs_root component.tcl]
+source [file join $vfs_root table.tcl]
 source [file join $vfs_root editor.tcl]
 source [file join $vfs_root repository.tcl]
 source [file join $vfs_root toolbar.tcl]
@@ -42,10 +43,10 @@ source [file join $vfs_root form.tcl]
 
 #main
 proc main {} {
-      
+
   #configuration
   namespace eval conf {
-    
+
     #load settings
     dict with ::settings {}
     dict with ::settings targets desktop {}
@@ -53,19 +54,19 @@ proc main {} {
     set schema_path [file join $::vfs_root $db_folder]
     set mod_path    [file join $::vfs_root $mod_folder]
     set db_path     [file join [pwd] "odin.db"]
-  
+
     set new_script_fields {
       name          text:required
       description   text:optional
       dependencies  text:optional
       arguments     text:optional
     }
-  
+
     set auth_fields {
       login       text:required
       password		password:required,password_size
     }
-    
+
     set config_fields {
       name	  	text:required
       exec	  	text:optional
@@ -74,12 +75,12 @@ proc main {} {
       enable		bool:required
       choose		list:required,task_type
     }
-  
+
     #load info
     set about_file [open [file join $asset_path "about.txt"] r]
     variable about_msg  [read $about_file]
     close $about_file
-    
+
     #load additional dependencies
     foreach pkg_name $src_pkgs {
       lappend ::auto_path [file join $mod_path $pkg_name]
@@ -93,22 +94,22 @@ proc main {} {
     package require ttk::theme::waldorf
     package require ctext
     package require menubar
-    
+
     #load database
     set db_exists [file exists $db_path]
     set db [Database new $db_path]
     if [! $db_exists] {
       set db_schema [open [file join $schema_path db.sql]]
       set db_sql    [read $db_schema]
-      close $db_schema      
-      $db write $db_sql      
+      close $db_schema
+      $db write $db_sql
     }
     set rules [$db query {SELECT * FROM rule}]
-    
+
     #load themes, logos and fonts
     set theme [Theme new [file join $asset_path logo_black_alt.png] [file join $asset_path logo_white_alt.png]]
   }
-  
+
   #application wide state
   namespace eval state {
     set user    {}
@@ -116,29 +117,29 @@ proc main {} {
     set state   {}
     set changes 0
   }
-  
+
   #layout
   namespace eval layout {
     set left 			.sidebar
     set right 		.tabview
     set bottom		.status
   }
-  
+
   #popups
   namespace eval popups {
-    
+
     variable popup [::PopUp new]
-  
+
     $popup define .auth_popup {
       set form [Form new ${Path}.form {} $::conf::auth_fields $::conf::rules]
-      
+
       oo::objdefine $form {
         mixin DbAccess
         variable User Hash
-  
+
         method auth_error? {} {
           my variable Db
-          
+
           set User   [my repo_val login]
           set Hash   [sha2::sha256 [my repo_val password]]
           set search [$Db query {
@@ -150,8 +151,8 @@ proc main {} {
 
           return [ne $User $search]
         }
-        
-        method submit {} {       
+
+        method submit {} {
           if {[my input_error?]} {
             my update_help "ERROR"
           } elseif {[my auth_error?]} {
@@ -160,10 +161,10 @@ proc main {} {
             my update_help "SUCCESS" "Authentication Successful"
             after 1000 "set ::state::user $User ; set ::state::hash $Hash ; [self] finish"
           }
-          
+
           my debug_input
         }
-  
+
         method finish {} {
           if {$::state::user eq {}} {
             $::app::app destroy
@@ -177,15 +178,15 @@ proc main {} {
       $form configure [list -padding 9p]
       $form use_db $::conf::db
       $form bind_method [$form input_id "password"] <Key-Return> "submit"
-      $form bind_method [$form id] <Destroy> "finish"    
+      $form bind_method [$form id] <Destroy> "finish"
       $form hire $Window
       $Window title "Authentication"
       $Window focus
     }
-    
+
     $popup define .new_script_popup {
       set form [Form new ${Path}.form {} $::conf::new_script_fields $::conf::rules]
-  
+
       oo::objdefine $form {
         mixin DbAccess
         variable Name Desc Args Db
@@ -195,22 +196,22 @@ proc main {} {
           set Desc  [my repo_val description]
           set Args  [my repo_val arguments]
         }
-        
+
         method name_error? {} {
           set saved_names [$Db query {SELECT name FROM script}]
           return [in $Name $saved_names]
         }
-        
+
         method save_error? {} {
           set retval [catch {$Db write "INSERT INTO `script` VALUES (:Name,:Desc,1,'',:Args,'');"}]
           return $retval
         }
-        
+
         method submit {} {
           my init_vars
-          
+
           if [my input_error?] {
-            my update_help "ERROR"     
+            my update_help "ERROR"
           } elseif [my name_error?] {
             my update_help "ERROR" "A script named $Name already exists"
           } elseif [my save_error?] {
@@ -221,11 +222,11 @@ proc main {} {
             namespace eval ::components::editor {
               $input insert_template {*}[search_script $state(script)]
               $input config_text [list -state [set state(input) normal]]
-              $tools config button save -state [set state(save) normal]              
+              $tools config button save -state [set state(save) normal]
             }
             after 1000 "[self] destroy"
           }
-          
+
           my debug_input
         }
       }
@@ -236,11 +237,11 @@ proc main {} {
       $Window title "New Script..."
       $Window focus
     }
-    
+
     $popup define .conf_popup {
       set form [Form new ${Path}.agentconfig "Agent Settings" $::conf::config_fields $::conf::rules]
-  
-      oo::objdefine $form {        
+
+      oo::objdefine $form {
         method submit {} {
           if [my input_error?] {
             my update_help "ERROR"
@@ -248,12 +249,12 @@ proc main {} {
           my debug_input
         }
       }
-      pack [$form id]  
+      pack [$form id]
       $Window title "Configuration..."
       $Window hire $form
       $Window focus
     }
-    
+
     $popup define .help_popup {
       set about_logo  [Container new ${Path}.logo]
       set about_text  [Container new ${Path}.text]
@@ -270,28 +271,28 @@ proc main {} {
       $Window center
     }
   }
-  
+
   #menubar
   namespace eval menubar {
     variable menubar [::menubar new]
-    
+
     proc quit {_} {
       $::app::app destroy
       exit 0
     }
-    
+
     proc theme {_ _ name} {
       $::conf::theme theme_choose $name
     }
-    
+
     proc about {_} {
       $::popups::popup display .help_popup
     }
-    
+
     proc agent {_} {
       $::popups::popup display .conf_popup
     }
-  
+
     $menubar define {
       File M:file {
         Quit        C       quit
@@ -309,12 +310,12 @@ proc main {} {
       }
       Settings M:settings {
         Agent       C       agent
-      }    
+      }
       Help M:help {
         About       C       about
       }
     }
-    
+
     $menubar install . {
       $menubar menu.configure -command {
         quit                ::menubar::quit
@@ -326,7 +327,7 @@ proc main {} {
       }
     }
   }
-  
+
   #status
   namespace eval statusbar {
     set statusbar 	[Container new $layout::bottom]
@@ -347,39 +348,40 @@ proc main {} {
     grid $sync_label $sync_info -sticky ew
     grid $rev_info -sticky w
   }
-  
+
   #sidebar
   namespace eval sidebar {
     variable sidebar	[Sidebar new $layout::left]
-    
+
     pack [$::conf::theme create_banner $layout::left]
-    
+
     $sidebar install {
       "Script Editor"   "$::components::component display editor"
+      "Script Manager"  "$::components::component display version_control"
     }
   }
-  
+
   #components
   namespace eval components {
     variable component [::Component new $::layout::right]
-    
+
     $component define editor "Script Editor" {
       variable ns [namespace current]
       variable input [Editor new ${Path}.input {}]
       variable tools [Toolbar new ${Path}.tools {}]
       variable state
-      
+
       array set state {
         new     normal
         save    disabled
         input   disabled
         script  {}
       }
-      
+
       proc search_script {name} {
         $::conf::db query "SELECT * FROM script WHERE name = :name ORDER BY revision DESC LIMIT 1;"
       }
-      
+
       proc save_script {} {
         set current_state  [$::components::editor::input parse_script]
         set previous_state [::components::editor::search_script $::components::editor::state(script)]
@@ -387,29 +389,29 @@ proc main {} {
         lassign $previous_state prev_name prev_desc prev_rev prev_body prev_args prev_deps
 
         if [eq $current_state $previous_state] {
-          tk_messageBox -title "Info" -message "No changes since last revision" -icon info -type ok        
+          tk_messageBox -title "Info" -message "No changes since last revision" -icon info -type ok
         } elseif [eq $current_state "parse_error"] {
           tk_messageBox -title "Error" -message "Script could not be parsed." -icon error -type ok
         } elseif [ne $name $prev_name] {
-          tk_messageBox -title "Error" -message "Invalid name change" -icon error -type ok  
+          tk_messageBox -title "Error" -message "Invalid name change" -icon error -type ok
         } elseif [ne $rev $prev_rev] {
-          tk_messageBox -title "Error" -message "Invalid version change" -icon error -type ok  
+          tk_messageBox -title "Error" -message "Invalid version change" -icon error -type ok
         } else {
           set rev [$::components::editor::input increase_revision]
-          try {            
+          try {
             $::conf::db write {INSERT INTO `script` VALUES (:name,:desc,:rev,:body,:args,:deps);}
           } on error {msg} {
-            tk_messageBox -title "Error" -message "Database write error" -detail "$msg" -icon error -type ok  
+            tk_messageBox -title "Error" -message "Database write error" -detail "$msg" -icon error -type ok
           } on ok {} {
-            tk_messageBox -title "Info" -message "Version $rev created for script $name" -icon info -type ok              
+            tk_messageBox -title "Info" -message "Version $rev created for script $name" -icon info -type ok
           }
         }
       }
-      
+
       proc new_script {} {
         $::popups::popup display .new_script_popup
       }
-      
+
       $input config_text [list -state $state(input)]
       $tools assign $input
       $tools add_button new "New" ${ns}::new_script
@@ -422,12 +424,63 @@ proc main {} {
       pack [$input id] -fill both -expand 1
       $Frame hire [list $input $tools]
     }
+
+    $component define version_control "Script Manager" {
+      variable table [Table new ${Path}.table {} [list Description Arguments Requirements]]
+      variable tools [Toolbar new ${Path}.tools {}]
+      variable state
+
+      array set state {
+        edit_source  disabled
+        script       {}
+        script_args  {}
+      }
+
+      proc find_version {name revision} {
+         return [$::conf::db query "SELECT * FROM script WHERE name = :name and revision = :revision;"]
+      }
+
+      proc find_scripts {} {
+         return [$::conf::db query "SELECT DISTINCT name FROM script ORDER BY name;"]
+      }
+
+      proc edit_script {} {
+        set name                [$::components::version_control::table this_parent]
+        set revision            [$::components::version_control::table this_id]
+        set state(script)       $name
+        set state(script_args)  [::components::version_control::find_version $name $revision]
+
+        $::components::component display editor
+        namespace eval ::components::editor {
+          set state(script) $::components::version_control::state(script)
+          $input insert_template {*}[$::components::version_control::state(script_args)]
+          $input config_text [list -state [set state(input) normal]]
+          $tools config button save -state [set state(save) normal]
+        }
+      }
+
+      $table use_db $::conf::db
+      set script_names [find_scripts]
+      set sql "SELECT revision, description, arguments, dependencies WHERE name = :name"
+      foreach name $script_names {
+        $table insert_group {} $name
+        $table insert_batch $name $sql
+      }
+
+      $tools assign $table
+      $tools add_button edit "Edit" ${ns}::edit_script
+      $tools config button edit -state disabled
+      $tools display_toolbar
+      pack [$tools id] -side bottom -fill x
+      pack [$input id] -fill both -expand 1
+      $Frame hire [list $table $tools]
+    }
   }
-  
+
   #app setup
   namespace eval app {
     variable app [Window new .]
-    
+
     $app title "Odin Administrator Interface"
     $app maximize
     $app hire [list \
@@ -438,9 +491,10 @@ proc main {} {
       $::statusbar::statusbar \
       $::conf::db \
       $::conf::theme]
-    
-    after 100 "$::popups::popup display .auth_popup"    
+
+    after 100 "$::popups::popup display .auth_popup"
   }
 }
 
 main
+
