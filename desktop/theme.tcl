@@ -37,7 +37,6 @@ oo::class create Theme {
 		foreach font {
 			"Droid Sans"
 			"Segoe UI"
-            "Bitstream Charter"
 			"Lucida Sans Unicode"
 			"Calibri"
 			"Trebuchet MS"
@@ -49,7 +48,9 @@ oo::class create Theme {
 			"Helvetica"
 			"Liberation Sans"
 			"DejaVu Sans"
-			"Bitstream Vera Sans"		
+			"Bitstream Vera Sans"
+			"clean"
+            "newspaper"	
 		} {
 			lappend regular_fonts $font [string tolower $font]
 		}
@@ -58,15 +59,16 @@ oo::class create Theme {
 			"Droid Sans Mono"
 			"Consolas"
 			"Hack"
-            "Courier 10 Pitch"
 			"Inconsolata"
 			"Lucida Console"
 			"Liberation Mono"
 			"DejaVu Sans Mono"
 			"Bitstream Vera Sans Mono"
+            "Courier 10 Pitch"
 			"Courier New"
 			"System"
 			"Terminal"
+			"fixed"
 		} {
 			lappend monospace_fonts $font [string tolower $font]
 		}
@@ -77,7 +79,7 @@ oo::class create Theme {
 		
 		#set system default theme
 		if {$::tcl_platform(platform) eq "unix"} {
-			my theme_choose "Arc"				
+			my theme_choose "Waldorf"				
 		} else {
 			my theme_choose "Default"
 		}
