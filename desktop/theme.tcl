@@ -37,6 +37,7 @@ oo::class create Theme {
 		foreach font {
 			"Droid Sans"
 			"Segoe UI"
+            "Bitstream Charter"
 			"Lucida Sans Unicode"
 			"Calibri"
 			"Trebuchet MS"
@@ -57,6 +58,7 @@ oo::class create Theme {
 			"Droid Sans Mono"
 			"Consolas"
 			"Hack"
+            "Courier 10 Pitch"
 			"Inconsolata"
 			"Lucida Console"
 			"Liberation Mono"
