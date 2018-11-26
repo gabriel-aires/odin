@@ -107,7 +107,7 @@ proc main {} {
     set rules [$db query {SELECT * FROM rule}]
 
     #load themes, logos and fonts
-    set theme [Theme new [file join $asset_path logo_black_alt.png] [file join $asset_path logo_white_alt.png]]
+    set theme [Theme new [file join $asset_path logo_black.png] [file join $asset_path logo_white.png]]
   }
 
   #application wide state

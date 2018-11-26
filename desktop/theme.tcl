@@ -6,7 +6,7 @@ oo::class create Theme {
 		if [! [& [file exists $dark_logo] [file exists $light_logo]]] {
 			error "error: theme could not be loaded due to missing image files"
 		}
-		
+
 		#setup themes and logos
 		set dark_img 	[image create photo -file $dark_logo]
 		set light_img 	[image create photo -file $light_logo]
@@ -17,7 +17,7 @@ oo::class create Theme {
 		dict set Themes "Arc"			"name" "Arc"
 		dict set Themes "Arc"			"logo" $dark_img
 		dict set Themes "Awdark"		"name" "awdark"
-		dict set Themes "Awdark"		"logo" $light_img		
+		dict set Themes "Awdark"		"logo" $light_img
 		dict set Themes "Awlight"		"name" "awlight"
 		dict set Themes "Awlight"		"logo" $dark_img
 		dict set Themes "Black"			"name" "black"
@@ -26,14 +26,14 @@ oo::class create Theme {
 		dict set Themes "Clearlooks"	"logo" $dark_img
 		dict set Themes "Waldorf"		"name" "waldorf"
 		dict set Themes "Waldorf"		"logo" $dark_img
-		
+
 		#setup custom fonts
 		set ChosenFont		{}
 		set FontsAvailable	[font families]
 		set FontsCreated	{}
 		set regular_fonts	{}
 		set monospace_fonts	{}
-		
+
 		foreach font {
 			"Droid Sans"
 			"Segoe UI"
@@ -50,11 +50,11 @@ oo::class create Theme {
 			"DejaVu Sans"
 			"Bitstream Vera Sans"
 			"clean"
-            "newspaper"	
+            "newspaper"
 		} {
 			lappend regular_fonts $font [string tolower $font]
 		}
-		
+
 		foreach font {
 			"Droid Sans Mono"
 			"Consolas"
@@ -72,14 +72,14 @@ oo::class create Theme {
 		} {
 			lappend monospace_fonts $font [string tolower $font]
 		}
-		
+
 		my create_font "monospace_font" 9 $monospace_fonts
 		my create_font "regular_font" 9 $regular_fonts
 		my font_choose "regular_font"
-		
+
 		#set system default theme
 		if {$::tcl_platform(platform) eq "unix"} {
-			my theme_choose "Waldorf"				
+			my theme_choose "Waldorf"
 		} else {
 			my theme_choose "Default"
 		}
@@ -97,22 +97,22 @@ oo::class create Theme {
 			}
 		}
 	}
-	
+
 	method font_choose {name} {
 		if [in $name $FontsCreated] {
 			set ChosenFont $name
 			my font_update
 		}
-	}	
-	
+	}
+
 	method font_update {} {
 		option clear
 		option add *font $ChosenFont
-		foreach class {TButton TCombobox TEntry TNotebook.Tab} {
+		foreach class {TButton TCombobox TLabel TEntry TNotebook.Tab TLabelframe.Label Treeview Treeview.Heading} {
 			::ttk::style configure $class -font $ChosenFont
 		}
 	}
-	
+
 	method create_banner {parent} {
 		lappend Banners [::ttk::label "$parent.banner" -image [my theme_logo]]
 		return [lindex $Banners end]
