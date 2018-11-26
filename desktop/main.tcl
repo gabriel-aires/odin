@@ -64,17 +64,13 @@ proc main {} {
     }
 
     set auth_fields {
-      login       text:required
-      password		password:required,password_size
+      login         text:required
+      password		  password:required,password_size
     }
 
-    set config_fields {
-      name	  	text:required
-      exec	  	text:optional
-      pwd	      password:required,password_size
-      options	  text:optional
-      enable		bool:required
-      choose		list:required,task_type
+    set conn_fields {
+      server        text:required
+      port          text:required
     }
 
     #load info
@@ -143,10 +139,10 @@ proc main {} {
           set User   [my repo_val login]
           set Hash   [sha2::sha256 [my repo_val password]]
           set search [$Db query {
-               SELECT u.name
-               FROM user u
-               INNER JOIN user_type t	on u.type_id = t.rowid
-               WHERE u.active = 1 AND t.name = 'admin' AND u.name = :User AND u.pass = :Hash
+            SELECT u.name
+            FROM user u
+            INNER JOIN user_type t	on u.type_id = t.rowid
+            WHERE u.active = 1 AND t.name = 'admin' AND u.name = :User AND u.pass = :Hash
           }]
 
           return [ne $User $search]
@@ -238,10 +234,11 @@ proc main {} {
       $Window focus
     }
 
-    $popup define .conf_popup {
-      set form [Form new ${Path}.agentconfig "Agent Settings" $::conf::config_fields $::conf::rules]
+    $popup define .conn_popup {
+      set form [Form new ${Path}.connect "Connection" $::conf::conn_fields $::conf::rules]
 
       oo::objdefine $form {
+
         method submit {} {
           if [my input_error?] {
             my update_help "ERROR"
@@ -289,8 +286,8 @@ proc main {} {
       $::popups::popup display .help_popup
     }
 
-    proc agent {_} {
-      $::popups::popup display .conf_popup
+    proc connection {_} {
+      $::popups::popup display .conn_popup
     }
 
     $menubar define {
@@ -308,7 +305,7 @@ proc main {} {
         Waldorf     R       theme_selector
       }
       Settings M:settings {
-        Agent       C       agent
+        Connection  C       connection
       }
       Help M:help {
         About       C       about
@@ -319,7 +316,7 @@ proc main {} {
       $menubar menu.configure -command {
         quit                ::menubar::quit
         theme_selector      ::menubar::theme
-        agent               ::menubar::agent
+        connection          ::menubar::connection
         about               ::menubar::about
       } -bind {
         quit                {0 Ctrl+Q Control-Key-q}
