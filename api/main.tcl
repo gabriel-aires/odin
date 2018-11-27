@@ -2,32 +2,22 @@
 package require starkit
 package require json
 
-#initialize starpack
+#initialize common settings
 starkit::startup
 set vfs_root [file dirname [file normalize [info script]]]
+source [file join $vfs_root common include.tcl]
 
-#read configuration
-set json_file [open $vfs_root/tcl.json r]
-set conf [::json::json2dict [read $json_file]]
-close $json_file
-
+#load server configuration
 namespace eval conf {
-
-	dict with conf {}
-	dict with conf targets server {}
-
-	set packages {sqlite3 cron json wapp}
-	set asset_path [file join $vfs_root $asset_folder]
+	dict with ::settings targets server {}
 	set html_path [file join $vfs_root $html_folder]
 	set wrap_path [file join $vfs_root $wrap_folder]
-	set mod_path [file join $vfs_root $mod_folder]
 	set entrypoint "wapp-page-[string trimleft $web_ctx /]"
 	set default_port 3000
-
 }
 
 #adjust auto_path and load wapp framework
-lappend ::auto_path $conf::mod_path/twapi4.3.5 $conf::mod_path/wapp1.0
+::conf::setup_path
 package require wapp
 
 #http errors
@@ -51,7 +41,7 @@ proc ERROR {code} {
 
 #serve static assets
 proc serve {asset} {
-	
+
 	set ext [ string range [file extension $asset] 1 end ]
 	switch  $ext {
 		html					{set type "text/html" ; set f_config "-encoding utf-8 -translation crlf"}
@@ -59,15 +49,15 @@ proc serve {asset} {
 		png - jpeg - gif - bmp	{set type "img/$ext" ; set f_config "-translation binary"}
 		default					{set type "application/octet-stream"; set f_config "-translation binary"}
 	}
-	
+
 	set file [open $asset r]
 	chan configure $file {*}$f_config
 	set content [read $file]
 	close $file
-	
+
 	wapp-mimetype $type
 	wapp-unsafe $content
-	
+
 }
 
 proc log {msg} {
@@ -87,22 +77,22 @@ proc maybe {procname option} {
 
 #route requests from entrypoint
 proc route {method raw_path} {
-	
+
 	set done [wapp-param RESPONSE_SENT]
 	set request_method [wapp-param REQUEST_METHOD]
 	set request_path [string trimright [wapp-param PATH_INFO] /]
 	set path [string trim $raw_path /]
 	set route [file join $conf::web_ctx $path]
-	
+
 	if {$done} {
 		return
 
 	} elseif {$method != $request_method} {
 		return
-	
+
 	} elseif {! [string match $route $request_path]} {
 		return
-	
+
 	} else {
 		set ep [string map {/* "" /? "" * "" ? "" / -} $path]
 		set endpoint [expr {$ep ne {} ? $ep : {index}}]
@@ -123,7 +113,7 @@ proc POST {path} {
 }
 
 proc PUT {path} {
-	route PUT $path 
+	route PUT $path
 }
 
 proc DELETE {path} {
@@ -145,37 +135,45 @@ proc wapp-default {} {
 
 #custom wapp start with tls options
 proc wapp-start-custom {cli_options} {
-	
+
 	set port 0
 	set tls_opts ""
 	set server [list wappInt-new-connection wappInt-http-readable server]
-	
+
 	if {([llength $cli_options] % 2) != 0} {
 		puts "usage: [file dirname $::argv0] -key1 value1 -key2 value2 ..."
 		return
 	}
-	
+
 	foreach {key value} $cli_options {
 		switch -exact -- $key {
 			-port {set port $value}
 			-cadir - -cafile - -certfile - -cypher - -dhparams - -keyfile {append tls_opts "$key $value "}
-			default {puts "unknown option: $key" ; return}			
+			default {puts "unknown option: $key" ; return}
 		}
 	}
-	
+
 	if {! $port} {
 		set port $conf::tcp_port
 	}
-	
+
 	if {$tls_opts ne ""} {
 		package require tls
 		tls::socket -server $server {*}$tls_opts $port
 	} else {
 		socket -server $server $port
 	}
-	
-    puts "Starting server with options -port $port $tls_opts..."
-	vwait ::stop
+
+# set worker [thread::create {
+# 	package require sqlite3
+#    package require json
+#    #load database
+# 	#accept commands
+# 	thread::wait
+# }]
+
+  puts "Starting server with options -port $port $tls_opts..."
+	vwait ::shutdown
 }
 
 #endpoints definition

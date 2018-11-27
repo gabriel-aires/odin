@@ -5,33 +5,16 @@ package require sha256
 package require sqlite3
 package require json
 
-#import namespaces
-namespace import ::tcl::mathop::*
-namespace import ::tcl::mathfunc::abs
-namespace import ::tcl::mathfunc::ceil
-namespace import ::tcl::mathfunc::floor
-namespace import ::tcl::mathfunc::max
-namespace import ::tcl::mathfunc::min
-namespace import ::tcl::mathfunc::rand
-namespace import ::tcl::mathfunc::round
-namespace import ::tcl::mathfunc::srand
-
-#initialize starpack
+#import common settings
 starkit::startup
 set vfs_root  [file dirname [file normalize [info script]]]
-set json_file [open $vfs_root/tcl.json r]
-set settings  [::json::json2dict [read $json_file]]
-close $json_file
+source [file join $vfs_root common include.tcl]
 
-#import classes
-source [file join $vfs_root utils.tcl]
+#import desktop classes
 source [file join $vfs_root event.tcl]
-source [file join $vfs_root contract.tcl]
 source [file join $vfs_root theme.tcl]
 source [file join $vfs_root window.tcl]
 source [file join $vfs_root popup.tcl]
-source [file join $vfs_root database.tcl]
-source [file join $vfs_root dbaccess.tcl]
 source [file join $vfs_root container.tcl]
 source [file join $vfs_root sidebar.tcl]
 source [file join $vfs_root component.tcl]
@@ -48,12 +31,8 @@ proc main {} {
   #configuration
   namespace eval conf {
 
-    #load settings
-    dict with ::settings {}
+    #load desktop settings
     dict with ::settings targets desktop {}
-    set asset_path  [file join $::vfs_root $asset_folder]
-    set schema_path [file join $::vfs_root $db_folder]
-    set mod_path    [file join $::vfs_root $mod_folder]
     set db_path     [file join [pwd] "odin.db"]
 
     set new_script_fields {
@@ -79,9 +58,7 @@ proc main {} {
     close $about_file
 
     #load additional dependencies
-    foreach pkg_name $src_pkgs {
-      lappend ::auto_path [file join $mod_path $pkg_name]
-    }
+    setup_path
     package require ttk::theme::Arc
     package require ttk::theme::awdark
     package require ttk::theme::awlight

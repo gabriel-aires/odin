@@ -93,7 +93,7 @@ proc build {component} {
 	global build_path tcl_cmd
 	set prev_dir [pwd]
 	cd $build_path
-	puts "Building $component: $tcl_cmd"	
+	puts "Building $component: $tcl_cmd"
 	exec {*}$tcl_cmd
 	cd $prev_dir
 }
@@ -127,9 +127,11 @@ foreach srcfile [glob $api_path/*] {
 	file copy -force $srcfile $app_vfs
 }
 
-file copy -force $asset_folder $app_vfs			;# for embedded wapp server
-file copy -force $asset_folder $web_path		;# for elm reactor server
-file copy -force $wrap_folder $app_vfs
+file copy -force $common_folder $app_vfs
+file copy -force $wrap_folder   $app_vfs
+file copy -force $db_folder	  	$app_vfs
+file copy -force $asset_folder  $app_vfs			;# for embedded wapp server
+file copy -force $asset_folder  $web_path		;# for elm reactor server
 
 build "embedded server"
 
@@ -143,6 +145,7 @@ foreach srcfile [glob $desktop_path/*] {
 	file copy -force $srcfile $app_vfs
 }
 
+file copy -force $common_folder $app_vfs
 file copy -force $db_folder	  	$app_vfs
 file copy -force $asset_folder	$app_vfs			;# for standalone binary
 file copy -force $asset_folder	$desktop_path	;# for local TK development

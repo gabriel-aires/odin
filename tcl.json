@@ -1,6 +1,7 @@
 {
   "asset_folder":     "assets",
   "db_folder":        "db",
+  "common_folder":    "common",
   "mod_folder":       "modules",
   "wrap_folder":      "wrap",
   "lib_path":         "lib",
