@@ -1,144 +1,52 @@
 #import packages
-package require starkit
-package require json
+package require Thread
 
-#initialize common settings
-starkit::startup
-set vfs_root [file dirname [file normalize [info script]]]
-source [file join $vfs_root common include.tcl]
+#startup configuration
+set shutdown 0
+set startup [format {
+	package require json
+	package require starkit
+	starkit::startup
 
-#load server configuration
-namespace eval conf {
-	dict with ::settings targets server {}
-	set html_path [file join $vfs_root $html_folder]
-	set wrap_path [file join $vfs_root $wrap_folder]
-	set entrypoint "wapp-page-[string trimleft $web_ctx /]"
-	set default_port 3000
-}
+	set vfs_root [file dirname [file normalize [info script]]]
+	source [file join $vfs_root common include.tcl]
 
-#adjust auto_path and load wapp framework
-::conf::setup_path
-package require wapp
-
-#http errors
-proc ERROR {code} {
-
-	if {[wapp-param RESPONSE_SENT]} {
-		return
-
-	} else {
-		switch $code {
-			403		{set msg "403 Forbidden"}
-			404		{set msg "404 Not Found"}
-			default {set msg "500 Internal Server Error"}
-		}
-
-		wapp-reply-code $msg
-		wapp-trim "<h1>$msg</h1>"
-		wapp-set-param RESPONSE_SENT 1
-	}
-}
-
-#serve static assets
-proc serve {asset} {
-
-	set ext [ string range [file extension $asset] 1 end ]
-	switch  $ext {
-		html					{set type "text/html" ; set f_config "-encoding utf-8 -translation crlf"}
-		txt - log				{set type "text/plain" ; set f_config "-encoding utf-8 -translation crlf"}
-		png - jpeg - gif - bmp	{set type "img/$ext" ; set f_config "-translation binary"}
-		default					{set type "application/octet-stream"; set f_config "-translation binary"}
+	namespace eval conf {
+		dict with ::settings targets server {}
+		setup_path
 	}
 
-	set file [open $asset r]
-	chan configure $file {*}$f_config
-	set content [read $file]
-	close $file
-
-	wapp-mimetype $type
-	wapp-unsafe $content
-
-}
-
-proc log {msg} {
-	puts "[clock format [clock seconds]]\t$msg"
-}
-
-#generate http response if endpoint is available
-proc maybe {procname option} {
-	if {[llength [info proc $procname]]>0} {
-		log "$procname $option"
-		$procname $option
-		wapp-set-param RESPONSE_SENT 1
-	} else {
-		wapp-default
+	namespace eval service {
+		set workers {}
+		set master 	%s
+		set self		[thread::id]
 	}
+
+	source [file join $vfs_root include.tcl]
+} [thread::id]]
+
+#initialize main thread
+eval $startup
+
+#setup worker threads
+foreach worker {database scheduler webserver} {
+	::service::add_worker $worker [thread::create [format {
+		%s
+		source [file join $vfs_root %s.tcl]
+		thread::wait
+	} $startup $worker]]
 }
 
-#route requests from entrypoint
-proc route {method raw_path} {
-
-	set done [wapp-param RESPONSE_SENT]
-	set request_method [wapp-param REQUEST_METHOD]
-	set request_path [string trimright [wapp-param PATH_INFO] /]
-	set path [string trim $raw_path /]
-	set route [file join $conf::web_ctx $path]
-
-	if {$done} {
-		return
-
-	} elseif {$method != $request_method} {
-		return
-
-	} elseif {! [string match $route $request_path]} {
-		return
-
-	} else {
-		set ep [string map {/* "" /? "" * "" ? "" / -} $path]
-		set endpoint [expr {$ep ne {} ? $ep : {index}}]
-		set urlparam [string replace $request_path 0 [string length $conf::web_ctx/$ep]]
-		set procname "endpoint-[string tolower $method]-$endpoint"
-		maybe $procname $urlparam
-
-	}
+# inform workers about other threads
+foreach {name id} $service::workers {
+	thread::broadcast [list ::service::add_worker $name $id]
 }
 
-#main HTTP verbs
-proc GET {path} {
-	route GET $path
-}
+#start daemon
+proc main {cli_options} {
 
-proc POST {path} {
-	route POST $path
-}
-
-proc PUT {path} {
-	route PUT $path
-}
-
-proc DELETE {path} {
-	route DELETE $path
-}
-
-#route table
-proc $conf::entrypoint {} {
-
-	wapp-set-param RESPONSE_SENT 0
-	source $::vfs_root/routes.tcl
-
-}
-
-#redirect to webapp
-proc wapp-default {} {
-	wapp-redirect $conf::web_ctx/
-}
-
-#custom wapp start with tls options
-proc wapp-start-custom {cli_options} {
-
-	set port 0
-	set tls_opts ""
-	set server [list wappInt-new-connection wappInt-http-readable server]
+	set web_port 0
+	set tls_opts {}
 
 	if {([llength $cli_options] % 2) != 0} {
 		puts "usage: [file dirname $::argv0] -key1 value1 -key2 value2 ..."
@@ -147,36 +55,22 @@ proc wapp-start-custom {cli_options} {
 
 	foreach {key value} $cli_options {
 		switch -exact -- $key {
-			-port {set port $value}
-			-cadir - -cafile - -certfile - -cypher - -dhparams - -keyfile {append tls_opts "$key $value "}
-			default {puts "unknown option: $key" ; return}
+			-webport 		{set web_port $value}
+			-cadir -
+			-cafile -
+			-certfile -
+			-cypher -
+			-dhparams -
+			-keyfile 		{append tls_opts "$key $value "}
+			default 		{puts "unknown option: $key" ; return}
 		}
 	}
 
-	if {! $port} {
-		set port $conf::tcp_port
-	}
+	#start webserver
+	::service::call webserver $web_port $tls_opts
 
-	if {$tls_opts ne ""} {
-		package require tls
-		tls::socket -server $server {*}$tls_opts $port
-	} else {
-		socket -server $server $port
-	}
-
-# set worker [thread::create {
-# 	package require sqlite3
-#    package require json
-#    #load database
-# 	#accept commands
-# 	thread::wait
-# }]
-
-  puts "Starting server with options -port $port $tls_opts..."
+	#enter main event loop
 	vwait ::shutdown
 }
 
-#endpoints definition
-source $vfs_root/endpoints_get.tcl
-
-wapp-start-custom $::argv
+main $::argv
