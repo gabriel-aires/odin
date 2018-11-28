@@ -1,14 +1,15 @@
 #import packages
 package require Thread
+package require starkit
+starkit::startup
 
 #startup configuration
 set shutdown 0
 set startup [format {
 	package require json
-	package require starkit
-	starkit::startup
 
-	set vfs_root [file dirname [file normalize [info script]]]
+	set argv0			%s
+	set vfs_root 	%s
 	source [file join $vfs_root common include.tcl]
 
 	namespace eval conf {
@@ -23,7 +24,7 @@ set startup [format {
 	}
 
 	source [file join $vfs_root include.tcl]
-} [thread::id]]
+} $::argv0 $::starkit::topdir [thread::id]]
 
 #initialize main thread
 eval $startup
@@ -67,7 +68,7 @@ proc main {cli_options} {
 	}
 
 	#start webserver
-	::service::call webserver $web_port $tls_opts
+	::service::call webserver start $web_port $tls_opts
 
 	#enter main event loop
 	vwait ::shutdown
