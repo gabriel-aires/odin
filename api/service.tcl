@@ -1,6 +1,6 @@
 namespace eval service {
 
-	variable workers
+	variable workers	{}
 	variable master
 	variable name
 	variable self			[thread::id]
@@ -65,7 +65,7 @@ namespace eval service {
 			}
 			source [file join $vfs_root $::service::name.tcl]
 			thread::wait
-		} $::argv0 $::starkit::topdir [thread::id] $name]
+		} $::argv0 $::starkit::topdir [thread::id] $name]]
 		add_worker $name $id
 		callout ::service::add_worker $name $id
   }
