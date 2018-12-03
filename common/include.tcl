@@ -1,4 +1,4 @@
-#import namespaces
+#import procedures
 namespace import ::tcl::mathop::*
 namespace import ::tcl::mathfunc::abs
 namespace import ::tcl::mathfunc::ceil
@@ -14,10 +14,10 @@ set json_file [open $vfs_root/tcl.json r]
 set settings  [::json::json2dict [read $json_file]]
 close $json_file
 
-#import classes
+#import namespaces / classes
+source [file join $vfs_root common utils.tcl]
 source [file join $vfs_root common database.tcl]
 source [file join $vfs_root common dbaccess.tcl]
-source [file join $vfs_root common utils.tcl]
 source [file join $vfs_root common contract.tcl]
 
 #configuration namespace

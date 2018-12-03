@@ -1,46 +1,21 @@
-#import packages
+#initialization
 package require Thread
 package require starkit
+package require json
+
 starkit::startup
+set vfs_root $::starkit::topdir
+source [file join $vfs_root common include.tcl]
+source [file join $vfs_root service.tcl]
 
-#startup configuration
-set shutdown 0
-set startup [format {
-	package require json
-
-	set argv0			%s
-	set vfs_root 	%s
-	source [file join $vfs_root common include.tcl]
-
-	namespace eval conf {
-		dict with ::settings targets server {}
-		setup_path
-	}
-
-	namespace eval service {
-		set workers {}
-		set master 	%s
-		set self		[thread::id]
-	}
-
-	source [file join $vfs_root include.tcl]
-} $::argv0 $::starkit::topdir [thread::id]]
-
-#initialize main thread
-eval $startup
-
-#setup worker threads
-foreach worker {database scheduler webserver} {
-	::service::add_worker $worker [thread::create [format {
-		%s
-		source [file join $vfs_root %s.tcl]
-		thread::wait
-	} $startup $worker]]
+namespace eval conf {
+	dict with ::settings targets server {}
+	setup_path
 }
 
-# inform workers about other threads
-foreach {name id} $service::workers {
-	thread::broadcast [list ::service::add_worker $name $id]
+#start worker threads
+foreach worker {database scheduler webserver} {
+	::service::startup $worker
 }
 
 #start daemon

@@ -1,6 +1,5 @@
-oo::class create Utils {
-
-    method Lremove {deletion list} {
+namespace eval ::utils {
+    proc lremove {deletion list} {
         set newlist {}
         foreach item $list {
             if {$item ni $deletion} {

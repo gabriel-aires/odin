@@ -1,5 +1,4 @@
 oo::class create Contract {
-  mixin Utils
   variable Workers
 
   method setup_contract {} {
@@ -7,14 +6,14 @@ oo::class create Contract {
   }
 
   method hire {objects} {
-		  lappend Workers {*}$objects
+	  lappend Workers {*}$objects
   }
 
   method dismiss {objects} {
     foreach object $objects {
-            catch {$object destroy}
+      catch {$object destroy}
     }
-    set Workers [my Lremove $objects $Workers]
+    set Workers [::utils::lremove $objects $Workers]
   }
 
   method terminate {} {
