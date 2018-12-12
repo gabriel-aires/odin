@@ -17,6 +17,7 @@
       "exe_name":     "odin-server",
       "src_pkgs":     [ "wapp1.0" ],
       "dll_pkgs":     [ "twapi4.3.5" ],
+      "admin_port":   "9999",
       "rest_port":    "3000",
       "web_ctx":      "/odin",
       "web_assets":   [ "logo_black.png", "logo_white.png" ],

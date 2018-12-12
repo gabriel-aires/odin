@@ -50,7 +50,7 @@ oo::class create Component {
         namespace eval $namespace "variable Frame $frame Path $path ; try {$script}"
         lappend Namespaces $namespace
         set options [list -side bottom -anchor e -padx 5p -pady 5p]
-        pack [::ttk::button ${path}.close_tab -text "Close" -command "[self] close $path"] {*}$options
+        pack [::ttk::button ${path}.close_tab -text "Close" -command "[self] close $path" -width -10] {*}$options
         my Reveal $path
     }
 

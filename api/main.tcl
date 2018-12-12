@@ -21,6 +21,7 @@ foreach worker {database scheduler webserver} {
 #start daemon
 proc main {cli_options} {
 
+  set adm_port $conf::admin_port
 	set web_port 0
 	set tls_opts {}
 
@@ -31,6 +32,7 @@ proc main {cli_options} {
 
 	foreach {key value} $cli_options {
 		switch -exact -- $key {
+      -admport    {set adm_port $value}
 			-webport 		{set web_port $value}
 			-cadir -
 			-cafile -
@@ -45,8 +47,16 @@ proc main {cli_options} {
 	#start webserver
 	::service::call webserver start $web_port $tls_opts
 
+	socket -server server $adm_port
+
 	#enter main event loop
 	vwait ::shutdown
+}
+
+proc server {sock client_ip client_port} {
+
+	chan configure $sock -buffering line -encoding utf-8 -blocking 0 -translation -crlf
+
 }
 
 main $::argv

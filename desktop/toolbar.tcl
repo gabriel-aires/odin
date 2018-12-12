@@ -2,18 +2,18 @@ oo::class create Toolbar {
 	superclass Container
 	mixin Repository Event
 	variable Widget Controls Elements
-	
+
 	constructor {parent label} {
 		next $parent $label
 		my setup_repository
 		set Widget {}
 		set Controls {}
 	}
-	
+
 	method assign {widget} {
 		set Widget $widget
 	}
-	
+
 	method add_control {name} {
 		if {$name in $Controls} {
 			error "Control already registered for [my id]: $name"
@@ -23,7 +23,7 @@ oo::class create Toolbar {
 			lappend Controls $name
 		}
 	}
-	
+
 	method parse_values {values} {
 		set parsed_values {}
 		set default_value {}
@@ -37,11 +37,11 @@ oo::class create Toolbar {
 		}
 		return [list $parsed_values $default_value]
 	}
-	
+
 	method add_spacer {} {
 		lappend Elements x
 	}
-	
+
 	method config {prefix name option value} {
 		set widget [my id].${prefix}_$name
 		if [in $widget $Elements] {
@@ -50,12 +50,12 @@ oo::class create Toolbar {
 			error "error: element $widget not found."
 		}
 	}
-	
+
 	method add_button {name label command} {
 		my add_control $name
-		lappend Elements [::ttk::button	[my id].button_$name -text $label -command $command ]
+		lappend Elements [::ttk::button	[my id].button_$name -text $label -command $command -width -10]
 	}
-	
+
 	method add_selector {name label method values} {
 		my add_control $name
 		lassign [my parse_values $values] options default_option
@@ -65,12 +65,12 @@ oo::class create Toolbar {
 		my send_command $method $name
 		my bind_method "[my id].selector_input_$name" <<ComboboxSelected>> "send_command $method $name"
 	}
-	
+
 	method send_command {method name} {
 		set cmd [list $Widget $method [my repo_val $name]]
 		uplevel 1 $cmd
 	}
-	
+
 	method display_toolbar {} {
 		grid {*}$Elements -sticky ew
 		set spacers [lsearch -exact -all $Elements x]
