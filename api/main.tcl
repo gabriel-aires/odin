@@ -47,16 +47,23 @@ proc main {cli_options} {
 	#start webserver
 	::service::call webserver start $web_port $tls_opts
 
-	socket -server server $adm_port
+	socket -server listen $adm_port
 
 	#enter main event loop
 	vwait ::shutdown
 }
 
-proc server {sock client_ip client_port} {
+proc receive {sock} {
+	set msg [chan gets $sock]
+	switch $msg --exact {
+		test	{puts $sock OK ; chan close $sock}
+		default {chan close $sock; error "Unknown message"}
+	}
+}
 
-	chan configure $sock -buffering line -encoding utf-8 -blocking 0 -translation -crlf
-
+proc listen {sock ip port} {
+	chan configure $sock -buffering line -encoding utf-8 -blocking 0 -translation auto
+	chan event $sock readable [list receive $sock]
 }
 
 main $::argv
