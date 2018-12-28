@@ -86,13 +86,13 @@ oo::class create Theme {
 	}
 
 	method create_font {name size family_list} {
-		puts "searching for installed fonts... (type: $name)"
+		::utils::log "info" "searching for installed fonts... (type: $name)"
 		foreach family $family_list {
-			puts "checking font: $family"
+			::utils::log "info" "checking font: $family"
 			if [in $family $FontsAvailable] {
 				font create $name -family $family -size $size
 				lappend FontsCreated $name
-				puts "font $name created ($family selected)"
+				::utils::log "info" "font $name created ($family selected)"
 				break
 			}
 		}
@@ -153,7 +153,7 @@ oo::class create Theme {
 		foreach banner $Banners {
 			destroy $banner
 		}
-		puts "theme object destroyed, ref: [self]"
+		::utils::log "info" "theme object destroyed, ref: [self]"
 	}
 }
 

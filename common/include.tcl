@@ -14,12 +14,6 @@ set json_file [open $vfs_root/tcl.json r]
 set settings  [::json::json2dict [read $json_file]]
 close $json_file
 
-#import namespaces / classes
-source [file join $vfs_root common utils.tcl]
-source [file join $vfs_root common database.tcl]
-source [file join $vfs_root common dbaccess.tcl]
-source [file join $vfs_root common contract.tcl]
-
 #configuration namespace
 namespace eval conf {
 
@@ -38,5 +32,12 @@ namespace eval conf {
   set asset_path  [file join $::vfs_root $asset_folder]
   set schema_path [file join $::vfs_root $db_folder]
   set mod_path    [file join $::vfs_root $mod_folder]
+  set log_path    "[file rootname $::argv0].log"
+  set log         [open $log_path a]
 }
 
+#import namespaces / classes
+source [file join $vfs_root common utils.tcl]
+source [file join $vfs_root common database.tcl]
+source [file join $vfs_root common dbaccess.tcl]
+source [file join $vfs_root common contract.tcl]

@@ -53,17 +53,23 @@ proc main {cli_options} {
 	vwait ::shutdown
 }
 
-proc receive {sock} {
-	set msg [chan gets $sock]
-	switch $msg --exact {
-		test	{puts $sock OK ; chan close $sock}
-		default {chan close $sock; error "Unknown message"}
+proc receive {sock peer} {
+	gets $sock msg
+	switch --exact $msg {
+		TEST {
+			chan event $sock writable [list puts $sock OK ; close $sock]
+			::utils::log "info" "$peer --> TEST"
+		}
+		default {
+			close $sock
+			::utils::log "error" "$peer --> INVALID MESSAGE"
+		}
 	}
 }
 
 proc listen {sock ip port} {
 	chan configure $sock -buffering line -encoding utf-8 -blocking 0 -translation auto
-	chan event $sock readable [list receive $sock]
+	chan event $sock readable [list receive $sock "$ip:$port"]
 }
 
 main $::argv

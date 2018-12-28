@@ -70,7 +70,7 @@ oo::class create Form {
 				::ttk::combobox $entry -textvariable [my repo_key $key] -state readonly -values $values -width [- $width 3]
 			}
 			default {
-				puts "Unsuported type: $type"
+				error "Unsuported type: $type"
 			}
 		}
 	}

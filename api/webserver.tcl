@@ -48,14 +48,10 @@ proc serve {asset} {
 
 }
 
-proc log {msg} {
-	puts "[clock format [clock seconds]]\t$msg"
-}
-
 #generate http response if endpoint is available
 proc maybe {procname option} {
 	if {[llength [info proc $procname]]>0} {
-		log "$procname $option"
+		::utils::log "info" "$procname $option"
 		$procname $option
 		wapp-set-param RESPONSE_SENT 1
 	} else {

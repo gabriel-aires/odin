@@ -83,7 +83,7 @@ oo::class create Component {
         my terminate
         foreach ns $Namespaces {
             namespace delete $ns
-            puts "namespace $ns deleted"
+            ::utils::log "info" "namespace $ns deleted"
         }
     }
 }
