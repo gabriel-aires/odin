@@ -7,6 +7,10 @@ import PureCss exposing (pure_min_v1_css, pure_grids_custom_css)
 
 main_css =
   """
+  html {
+    min-height: 100%;
+  }
+
   body {
   	background-color: {{ bg_color }};
   	font-family: sans-serif;
@@ -121,6 +125,22 @@ main_css =
 
   #content {
   	margin-left: 0rem;
+    padding: 1rem;
+  }
+
+  #page-container {
+    border-top: 0.3rem teal dashed;
+  }
+
+  #page-footer {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    background-color: teal;
+    border-top-left-radius: 1rem;
+    color: white;
   }
 
   /* Responsive Layout */

@@ -63,7 +63,7 @@ init () url key =
             , Category "search"     ["history", "advanced"]
             , Category "tasks"      ["src", "pkg"]
             , Category "logs"       ["deploy", "apps"]
-            , Category "help"       ["faq", "manuals"]
+            , Category "help"       ["faq", "manuals", "about"]
             , Category "account"    ["access","profile"]
             ]
         )
@@ -204,8 +204,25 @@ view model =
                 ]
             ]
         , section [ id "content" ]
-            [ iframe [ srcdoc "<input type='file'>", style "overflow" "hidden", style "border" "none", style "width" "70%" ]
-                [ text "Your browser does not support iframes" ]
+            [ header [ id "page-title" ]
+                [ img [ class "pure-img-responsive", src "assets/logo_black.png" ] []
+                , br [] []
+                , h2 [] [ text "Open Deployment Information Network" ]
+                ]
+            , section [ id "page-container" ]
+                [ p []
+                    [   text  """
+                              Distributed system for software deployment automation and developer aiding facilities
+                              (log visualization, custom runtime metrics, etc). It's based off another project of
+                              mine called "deploy-utils", originally written in pure shell script as a proof of
+                              concept.
+                              """
+                    ]
+                ]
+            , footer [ id "page-footer" ]
+                [ h4  []
+                      [ text "Author: Gabriel Aires Guedes / airesgabriel@gmail.com"]
+                ]
             ]
         ]
     }
