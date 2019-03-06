@@ -8,6 +8,12 @@ Distributed system for software deployment automation and developer aiding facil
 
 Standalone cross-platform Tcl/Tk application
 
+- Windows 7:
+
+![Odin Admin Windows](https://github.com/gabriel-aires/odin/blob/master/docs/odin-admin-screenshot-windows.png)
+
+- Linux:
+
 ![Odin Admin](https://github.com/gabriel-aires/odin/blob/master/docs/odin-admin-screenshot.png)
 
 ## User Interface
@@ -24,4 +30,4 @@ Elm webapp
 ## Author:
 
 Gabriel Aires Guedes - airesgabriel@gmail.com
-Last updated at 2019-03-05.
+Last updated at 2019-03-06.
